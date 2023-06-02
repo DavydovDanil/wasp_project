@@ -2,6 +2,7 @@ import telebot
 import sqlite3
 import credentials
 from telebot import types
+import sys
 
 def databasecreation():
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
