@@ -4,26 +4,11 @@ from telebot import types
 import random
 import sys
 
-surname = ""
-name = ""
-patronymic = ""
-source = []
-check_gorod = ""
-phone_number = 0
-check_phone = 0
-email = ""
-check_email = ""
-first_stage_result = ""
-second_stage_result = ""
-school = ""
-city = ""
-status = ""
-
-
-def databasecreation():
+def databasecreation_student():
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
     sqlite_create_table_query = '''CREATE TABLE student_info(
                                     id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                    id_v_chate INTEGER NOT NULL,
                                     name TEXT NOT NULL,
                                     surname TEXT NOT NULL,
                                     patronymic TEXT,
@@ -41,15 +26,12 @@ def databasecreation():
     cursor.close()
 
 
-def databasefill_studentinfo(name, surname, patronymic, email, phone_number, first_stage_result,
-                             second_stage_result, school, city, status):
+def databasezapolnenie_student(value, table):
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
     sqlite_insert_query = """INSERT INTO student_info
-                              (name, surname, patronymic, email, phone_number, first_stage_result, second_stage_result, school, city, status)
-                              VALUES (\'""" + str(name) + """\', \'""" + str(surname) + """\', \'""" + str(
-        patronymic) + """\', \'""" + str(email) + """\', \'""" + str(phone_number) + """\', \'""" + str(
-        first_stage_result) + """\', \'""" + str(second_stage_result) + """\', \'""" + str(school) + """\', \'""" + str(
-        city) + """\', \'""" + str(status) + """\');"""
+    (table)
+    VALUES(\'""" + str(value) + """\')"""
+#СПРОСИТЬ ПРО ЗАПОЛНЕНИЕ СТОЛБЦА ЧЕРЕЗ ПЕРЕМЕННУЮ
 
 
 bot = telebot.TeleBot('6047835028:AAHha2Rn-1_THc9tEpSwvRaVn4N65qDZohI')
@@ -57,7 +39,7 @@ bot = telebot.TeleBot('6047835028:AAHha2Rn-1_THc9tEpSwvRaVn4N65qDZohI')
 
 @bot.message_handler(commands=['start'])
 def start(message):
-    databasecreation()
+    databasecreation_student()
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
     organizer = types.KeyboardButton('Я организатор')
     uchenik = types.KeyboardButton('Я ученик')
@@ -74,6 +56,8 @@ def user_answer(message):
         bot.send_message(message.chat.id, 'Введите ваш пароль')
         # bot.register_next_step_handler(msgge, ImOrganiser)
     elif message.text == 'Я ученик':
+        id_in_chat = message.from_user.id
+        databasezapolnenie_student(id_in_chat, id_v_chate)
         markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
         back = types.KeyboardButton('Назад')
         ready = types.KeyboardButton('Готов(a) регистрироваться!')
@@ -127,6 +111,14 @@ def step2(message):
 # confirmation after name menu
 def step22(message):
     source = message.text
+    list = source.split(' ')
+    list.remove('')
+    surname1 = list[0]
+    name1= list[1]
+    patronymic1 = list[2]
+    databasezapolnenie_student(surname1, surname)
+    databasezapolnenie_student(name1, name)
+    databasezapolnenie_student(patronymic1, patronymic)
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
     yes = types.KeyboardButton('Да')
     no = types.KeyboardButton('Нет')
@@ -141,13 +133,9 @@ def step22(message):
 # just exception
 def step23(message):
     if message.text == 'Да':
-        list = source.split(' ')
-        list.remove('')
-        surname = list[0]
-        name = list[1]
-        patronymic = list[2]
         gorod(message)
     elif message.text == 'Нет':
+
         ImStudent(message)
     elif message.text == 'Назад':
         bot.send_message(message.chat.id, "Вы вернулись в меню")
