@@ -4,6 +4,7 @@ from telebot import types
 import random
 import sys
 
+
 def databasecreation_student():
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
     sqlite_create_table_query = '''CREATE TABLE student_info(
@@ -20,6 +21,7 @@ def databasecreation_student():
                                     city TEXT NOT NULL,
                                     status TEXT NOT NULL);'''
 
+
     cursor = sqlite_connection.cursor()
     cursor.execute(sqlite_create_table_query)
     sqlite_connection.commit()
@@ -32,6 +34,13 @@ def databasezapolnenie_student(value, table):
     (table)
     VALUES(\'""" + str(value) + """\')"""
 #СПРОСИТЬ ПРО ЗАПОЛНЕНИЕ СТОЛБЦА ЧЕРЕЗ ПЕРЕМЕННУЮ
+
+
+def update_student(value, table, idvchate):
+    sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
+    sqlite_update_query = """UPDATE student_info
+    SET table = \'""" + str(value) + """\'
+    WHERE id_v_chate = idvchate"""
 
 
 bot = telebot.TeleBot('6047835028:AAHha2Rn-1_THc9tEpSwvRaVn4N65qDZohI')
@@ -56,8 +65,7 @@ def user_answer(message):
         bot.send_message(message.chat.id, 'Введите ваш пароль')
         # bot.register_next_step_handler(msgge, ImOrganiser)
     elif message.text == 'Я ученик':
-        id_in_chat = message.from_user.id
-        databasezapolnenie_student(id_in_chat, id_v_chate)
+        databasezapolnenie_student(message.from_user.id, id_v_chate)
         markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
         back = types.KeyboardButton('Назад')
         ready = types.KeyboardButton('Готов(a) регистрироваться!')
@@ -135,7 +143,6 @@ def step23(message):
     if message.text == 'Да':
         gorod(message)
     elif message.text == 'Нет':
-
         ImStudent(message)
     elif message.text == 'Назад':
         bot.send_message(message.chat.id, "Вы вернулись в меню")
@@ -242,7 +249,6 @@ def proverka_proverki_pochtu(message):
         vvedite_pochtu(msg)
 
 
-databasefill_studentinfo(name, surname, patronymic, email, phone_number, "null", "null", "1533", city, "Поступающий")
 
 
 """Добавь школу"""
