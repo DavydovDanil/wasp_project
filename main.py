@@ -1,13 +1,29 @@
 import telebot
 import sqlite3
-import credentials
 from telebot import types
+import random
 import sys
+
+surname = ""
+name = ""
+patronymic = ""
+source = []
+check_gorod = ""
+phone_number = 0
+check_phone = 0
+email = ""
+check_email = ""
+first_stage_result = ""
+second_stage_result = ""
+school = ""
+city = ""
+status = ""
+
 
 def databasecreation():
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
     sqlite_create_table_query = '''CREATE TABLE student_info(
-                                    id INTEGER PRIMARY KEY NOT NULL UNIQUE,
+                                    id INTEGER PRIMARY KEY AUTOINCREMENT,
                                     name TEXT NOT NULL,
                                     surname TEXT NOT NULL,
                                     patronymic TEXT,
@@ -25,16 +41,21 @@ def databasecreation():
     cursor.close()
 
 
-def databasefill_studentinfo(a):
+def databasefill_studentinfo(name, surname, patronymic, email, phone_number, first_stage_result,
+                             second_stage_result, school, city, status):
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
     sqlite_insert_query = """INSERT INTO student_info
-                              (id, name, surname,patronymic,email,phone_number,first_stage_result)
-                              VALUES (""" + a + """, 'Alex', 'sale@gmail.com', '2020-11-20', 8600);"""
+                              (name, surname, patronymic, email, phone_number, first_stage_result, second_stage_result, school, city, status)
+                              VALUES (\'""" + str(name) + """\', \'""" + str(surname) + """\', \'""" + str(
+        patronymic) + """\', \'""" + str(email) + """\', \'""" + str(phone_number) + """\', \'""" + str(
+        first_stage_result) + """\', \'""" + str(second_stage_result) + """\', \'""" + str(school) + """\', \'""" + str(
+        city) + """\', \'""" + str(status) + """\');"""
 
-bot = telebot.TeleBot(credentials.token)
+
+bot = telebot.TeleBot('6047835028:AAHha2Rn-1_THc9tEpSwvRaVn4N65qDZohI')
+
 
 @bot.message_handler(commands=['start'])
-
 def start(message):
     databasecreation()
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
@@ -46,7 +67,8 @@ def start(message):
                            reply_markup=markup)
     bot.register_next_step_handler(msg, user_answer)
 
-#exponation menu
+
+# exponation menu
 def user_answer(message):
     if message.text == 'Я организатор':
         bot.send_message(message.chat.id, 'Введите ваш пароль')
@@ -79,7 +101,7 @@ def ImStudent(message):
     bot.register_next_step_handler(msg, step22)
 
 
-#exception if user made a mistake
+# exception if user made a mistake
 def step1(message):
     if (message.text == 'Назад'):
         start(message)
@@ -88,7 +110,7 @@ def step1(message):
         start(message)
 
 
-#exception in name menu
+# exception in name menu
 def step2(message):
     if (message.text == 'Назад'):
         start(message)
@@ -102,8 +124,9 @@ def step2(message):
         start(message)
 
 
-#confirmation after name menu
+# confirmation after name menu
 def step22(message):
+    source = message.text
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
     yes = types.KeyboardButton('Да')
     no = types.KeyboardButton('Нет')
@@ -112,13 +135,17 @@ def step22(message):
     msg = bot.send_message(message.chat.id, f"Ваши имя, фамилия, отчество: {message.text}, вы уверены?",
                            reply_markup=markup)
 
-
     bot.register_next_step_handler(msg, step23)
 
 
-#just exception
+# just exception
 def step23(message):
     if message.text == 'Да':
+        list = source.split(' ')
+        list.remove('')
+        surname = list[0]
+        name = list[1]
+        patronymic = list[2]
         gorod(message)
     elif message.text == 'Нет':
         ImStudent(message)
@@ -129,7 +156,7 @@ def step23(message):
         start(message)
 
 
-#user chooses city
+# user chooses city
 def gorod(message):
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
     back = types.KeyboardButton('Назад')
@@ -139,11 +166,12 @@ def gorod(message):
     bot.register_next_step_handler(msg, proverka_goroda)
 
 
-#city exception
+# city exception
 def proverka_proverki_goroda(message):
     if message.text == 'Нет':
         gorod(message)
     elif message.text == 'Да':
+        city = check_gorod
         phone(message)
     elif message.text == 'Назад':
         ImStudent(message)
@@ -152,8 +180,9 @@ def proverka_proverki_goroda(message):
         gorod(msg)
 
 
-#city exception exception
+# city exception exception
 def proverka_goroda(message):
+    check_gorod = message.text
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
     no = types.KeyboardButton('Нет')
     yes = types.KeyboardButton('Да')
@@ -164,11 +193,16 @@ def proverka_goroda(message):
 
 
 def phone(message):
-    msg = bot.send_message(message.chat.id, 'Введите номер телефона \n(Например "88005553535" или \n"+78005553535")')
+    msg = bot.send_message(message.chat.id, 'Введите номер телефона \n(Например "88005553535")')
     bot.register_next_step_handler(msg, proverka_phone)
 
 
 def proverka_phone(message):
+    try:
+        check_phone = int(message.text)
+    except:
+        message = bot.send_message(message.chat.id, "Введите номер телефона повторно")
+        phone(message)
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
     no = types.KeyboardButton('Нет')
     yes = types.KeyboardButton('Да')
@@ -182,6 +216,7 @@ def proverka_proverki_phone(message):
     if message.text == 'Нет':
         phone(message)
     elif message.text == 'Да':
+        phone_number = check_phone
         vvedite_pochtu(message)
     elif message.text == 'Назад':
         gorod(message)
@@ -196,6 +231,7 @@ def vvedite_pochtu(message):
 
 
 def proverka_pochtu(message):
+    check_email = message.text
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
     no = types.KeyboardButton('Нет')
     yes = types.KeyboardButton('Да')
@@ -210,6 +246,7 @@ def proverka_proverki_pochtu(message):
         vvedite_pochtu(message)
     elif message.text == 'Да':
         Vvedenie_K_Testu(message)
+        email = check_email
     elif message.text == 'Назад':
         phone(message)
     else:
@@ -217,6 +254,10 @@ def proverka_proverki_pochtu(message):
         vvedite_pochtu(msg)
 
 
+databasefill_studentinfo(name, surname, patronymic, email, phone_number, "null", "null", "1533", city, "Поступающий")
+
+
+"""Добавь школу"""
 def Vvedenie_K_Testu(message):
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
     no = types.KeyboardButton('Нет')
