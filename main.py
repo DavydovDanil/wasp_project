@@ -23,7 +23,7 @@ def databasecreation():
     cursor.close()
 
 
-def databasefill_studentinfo(a, b, c):
+def databasefill_studentinfo(a, b):
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
     sqlite_insert_query = """INSERT INTO student_info
                               (id, name, surname,patronymic,email,phone_number,first_stage_result)
