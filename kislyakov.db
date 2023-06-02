@@ -1,5 +1,0 @@
-import sqlite3
-db = sqlite3('kislyakov.db')
-c = db.cursor()
-
-db.close
