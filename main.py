@@ -1,5 +1,6 @@
 import telebot
 import sqlite3
+import credentials
 from telebot import types
 
 def databasecreation():
@@ -29,7 +30,7 @@ def databasefill_studentinfo(a):
                               (id, name, surname,patronymic,email,phone_number,first_stage_result)
                               VALUES (""" + a + """, 'Alex', 'sale@gmail.com', '2020-11-20', 8600);"""
 
-bot = telebot.TeleBot('6047835028:AAHha2Rn-1_THc9tEpSwvRaVn4N65qDZohI')
+bot = telebot.TeleBot(credentials.token)
 
 @bot.message_handler(commands=['start'])
 
