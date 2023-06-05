@@ -4,26 +4,12 @@ from telebot import types
 import random
 import sys
 
-surname = ""
-name = ""
-patronymic = ""
-source = []
-check_gorod = ""
-phone_number = 0
-check_phone = 0
-email = ""
-check_email = ""
-first_stage_result = ""
-second_stage_result = ""
-school = ""
-city = ""
-status = ""
 
-
-def databasecreation():
+def databasecreation_student():
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
     sqlite_create_table_query = '''CREATE TABLE student_info(
                                     id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                    id_v_chate INTEGER NOT NULL,
                                     name TEXT NOT NULL,
                                     surname TEXT NOT NULL,
                                     patronymic TEXT,
@@ -35,21 +21,18 @@ def databasecreation():
                                     city TEXT NOT NULL,
                                     status TEXT NOT NULL);'''
 
+
     cursor = sqlite_connection.cursor()
     cursor.execute(sqlite_create_table_query)
     sqlite_connection.commit()
     cursor.close()
 
 
-def databasefill_studentinfo(name, surname, patronymic, email, phone_number, first_stage_result,
-                             second_stage_result, school, city, status):
+def update_student(value, table, idvchate):
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
-    sqlite_insert_query = """INSERT INTO student_info
-                              (name, surname, patronymic, email, phone_number, first_stage_result, second_stage_result, school, city, status)
-                              VALUES (\'""" + str(name) + """\', \'""" + str(surname) + """\', \'""" + str(
-        patronymic) + """\', \'""" + str(email) + """\', \'""" + str(phone_number) + """\', \'""" + str(
-        first_stage_result) + """\', \'""" + str(second_stage_result) + """\', \'""" + str(school) + """\', \'""" + str(
-        city) + """\', \'""" + str(status) + """\');"""
+    sqlite_update_query = """UPDATE student_info
+    SET \'""" + str(table) + """\' = \'""" + str(value) + """\'
+    WHERE id_v_chate = \'""" + str(idvchate) + """\'"""
 
 
 bot = telebot.TeleBot('6047835028:AAHha2Rn-1_THc9tEpSwvRaVn4N65qDZohI')
@@ -57,7 +40,11 @@ bot = telebot.TeleBot('6047835028:AAHha2Rn-1_THc9tEpSwvRaVn4N65qDZohI')
 
 @bot.message_handler(commands=['start'])
 def start(message):
-    databasecreation()
+    databasecreation_student()
+    sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
+    sqlite_insert_query = """INSERT INTO student_info
+    (id_v_chate)
+    VALUES(\'""" + str(message.chat.id) + """\')"""
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
     organizer = types.KeyboardButton('Я организатор')
     uchenik = types.KeyboardButton('Я ученик')
@@ -127,6 +114,14 @@ def step2(message):
 # confirmation after name menu
 def step22(message):
     source = message.text
+    list = source.split(' ')
+    list.remove('')
+    surname1 = list[0]
+    name1= list[1]
+    patronymic1 = list[2]
+    update_student(surname1, "surname", message.chat.id)
+    update_student(name1, "name", message.chat.id)
+    update_student(patronymic1, "patronymic", message.chat.id)
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
     yes = types.KeyboardButton('Да')
     no = types.KeyboardButton('Нет')
@@ -141,13 +136,11 @@ def step22(message):
 # just exception
 def step23(message):
     if message.text == 'Да':
-        list = source.split(' ')
-        list.remove('')
-        surname = list[0]
-        name = list[1]
-        patronymic = list[2]
         gorod(message)
     elif message.text == 'Нет':
+        update_student("null", "surname", message.chat.id)
+        update_student("null", "patronymic", message.chat.id)
+        update_student("null", "name", message.chat.id)
         ImStudent(message)
     elif message.text == 'Назад':
         bot.send_message(message.chat.id, "Вы вернулись в меню")
@@ -169,9 +162,9 @@ def gorod(message):
 # city exception
 def proverka_proverki_goroda(message):
     if message.text == 'Нет':
+        update_student("null", "city", message.chat.id)
         gorod(message)
     elif message.text == 'Да':
-        city = check_gorod
         phone(message)
     elif message.text == 'Назад':
         ImStudent(message)
@@ -183,6 +176,7 @@ def proverka_proverki_goroda(message):
 # city exception exception
 def proverka_goroda(message):
     check_gorod = message.text
+    update_student(check_gorod, "city", message.chat.id)
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
     no = types.KeyboardButton('Нет')
     yes = types.KeyboardButton('Да')
@@ -200,6 +194,7 @@ def phone(message):
 def proverka_phone(message):
     try:
         check_phone = int(message.text)
+        update_student(check_phone, "phone", message.chat.id)
     except:
         message = bot.send_message(message.chat.id, "Введите номер телефона повторно")
         phone(message)
@@ -214,9 +209,9 @@ def proverka_phone(message):
 
 def proverka_proverki_phone(message):
     if message.text == 'Нет':
+        update_student("null", "phone", message.chat.id)
         phone(message)
     elif message.text == 'Да':
-        phone_number = check_phone
         vvedite_pochtu(message)
     elif message.text == 'Назад':
         gorod(message)
@@ -232,6 +227,7 @@ def vvedite_pochtu(message):
 
 def proverka_pochtu(message):
     check_email = message.text
+    update_student(check_email, "email", message.chat.id)
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
     no = types.KeyboardButton('Нет')
     yes = types.KeyboardButton('Да')
@@ -243,10 +239,10 @@ def proverka_pochtu(message):
 
 def proverka_proverki_pochtu(message):
     if message.text == 'Нет':
+        update_student("null", "email", message.chat.id)
         vvedite_pochtu(message)
     elif message.text == 'Да':
         Vvedenie_K_Testu(message)
-        email = check_email
     elif message.text == 'Назад':
         phone(message)
     else:
@@ -254,7 +250,6 @@ def proverka_proverki_pochtu(message):
         vvedite_pochtu(msg)
 
 
-databasefill_studentinfo(name, surname, patronymic, email, phone_number, "null", "null", "1533", city, "Поступающий")
 
 
 """Добавь школу"""
