@@ -3,23 +3,25 @@ import sqlite3
 from telebot import types
 import random
 import sys
-
+#    update_student(surname1, "surname", message.chat.id)
+  #  update_student(name1, "name", message.chat.id)
+   # update_student(patronymic1, "patronymic", message.chat.id)
 
 def databasecreation_student():
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
-    sqlite_create_table_query = '''CREATE TABLE student_info(
+    sqlite_create_table_query = '''CREATE TABLE IF NOT EXISTS student_info(
                                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                                     id_v_chate INTEGER NOT NULL,
-                                    name TEXT NOT NULL,
-                                    surname TEXT NOT NULL,
+                                    name TEXT,
+                                    surname TEXT,
                                     patronymic TEXT,
-                                    email TEXT NOT NULL,
-                                    phone_number INTEGER NOT NULL,
+                                    email TEXT ,
+                                    phone_number INTEGER ,
                                     first_stage_result TEXT,
                                     second_stage_result TEXT,
-                                    school TEXT NOT NULL,
-                                    city TEXT NOT NULL,
-                                    status TEXT NOT NULL);'''
+                                    school TEXT ,
+                                    city TEXT ,
+                                    status TEXT );'''
 
 
     cursor = sqlite_connection.cursor()
@@ -33,6 +35,10 @@ def update_student(value, table, idvchate):
     sqlite_update_query = """UPDATE student_info
     SET \'""" + str(table) + """\' = \'""" + str(value) + """\'
     WHERE id_v_chate = \'""" + str(idvchate) + """\'"""
+    cursor = sqlite_connection.cursor()
+    cursor.execute(sqlite_update_query)
+    sqlite_connection.commit()
+    cursor.close()
 
 
 bot = telebot.TeleBot('6047835028:AAHha2Rn-1_THc9tEpSwvRaVn4N65qDZohI')
@@ -45,6 +51,20 @@ def start(message):
     sqlite_insert_query = """INSERT INTO student_info
     (id_v_chate)
     VALUES(\'""" + str(message.chat.id) + """\')"""
+    cursor = sqlite_connection.cursor()
+    cursor.execute(sqlite_insert_query)
+    sqlite_connection.commit()
+    cursor.close()
+    sqlite_connection1 = sqlite3.connect('kislyakovdatabase.db')
+    sqlite_select_query = """SELECT id_v_chate FROM
+    student_info WHERE id_v_chate LIKE \'""" + str(message.chat.id) + """\'"""
+    cursor = sqlite_connection.cursor()
+    cursor.execute(sqlite_select_query)
+    sqlite_connection.commit()
+    cursor.close()
+    if(sqlite_select_query!="null"):
+        msg = bot.send_message(message.chat.id, 'У вас уже есть аккаунт')
+        sys.exit(0)
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
     organizer = types.KeyboardButton('Я организатор')
     uchenik = types.KeyboardButton('Я ученик')
@@ -68,7 +88,7 @@ def user_answer(message):
         msg = bot.send_message(message.chat.id,
                                'Поступление на наши курсы состоит из 4-ёх этапов: \n\n1) Заполнение анкеты\n2) Тест в онлайн-формате\n3) Тест в очном формате\n4) Интервью',
                                reply_markup=markup)
-        bot.register_next_step_handler(msg, step2)
+        bot.register_next_step_handler(msg, ImStudent1)
     elif message.text == 'Зачем нужен бот?':
         markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
         back = types.KeyboardButton('Назад')
@@ -82,12 +102,26 @@ def user_answer(message):
 # bot.send_message(chat_id)
 
 # if student menu clicked
-def ImStudent(message):
+def ImStudent1(message):
     msg = bot.send_message(message.chat.id,
-                           'Вы были перенесены на этап регистрации. Введите фамилию, имя, отчество (Пример: Кисляков Антон Юрьевич)')
+                           'Вы были перенесены на этап регистрации. Введите имя (Пример: Антон)')
+    bot.register_next_step_handler(msg, ImStudent2)
+
+def ImStudent2(message):
+    msg = bot.send_message(message.chat.id,
+                           'Введите фамилию(Пример: Кисляков)')
+    update_student(message.text,"name",message.chat.id)
+
+
+    bot.register_next_step_handler(msg, ImStudent3)
+
+
+def ImStudent3(message):
+    msg = bot.send_message(message.chat.id,
+                           'Введите отчество(Пример: Юрьевич)')
+    update_student(message.text, "surname", message.chat.id)
+
     bot.register_next_step_handler(msg, step22)
-
-
 # exception if user made a mistake
 def step1(message):
     if (message.text == 'Назад'):
@@ -113,21 +147,13 @@ def step2(message):
 
 # confirmation after name menu
 def step22(message):
-    source = message.text
-    list = source.split(' ')
-    list.remove('')
-    surname1 = list[0]
-    name1= list[1]
-    patronymic1 = list[2]
-    update_student(surname1, "surname", message.chat.id)
-    update_student(name1, "name", message.chat.id)
-    update_student(patronymic1, "patronymic", message.chat.id)
+    update_student(message.text, "patronymic", message.chat.id)
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
     yes = types.KeyboardButton('Да')
     no = types.KeyboardButton('Нет')
     back = types.KeyboardButton('Назад')
     markup.add(yes, no, back)
-    msg = bot.send_message(message.chat.id, f"Ваши имя, фамилия, отчество: {message.text}, вы уверены?",
+    msg = bot.send_message(message.chat.id, f"Вы уверены, что ввели правильные данные?",
                            reply_markup=markup)
 
     bot.register_next_step_handler(msg, step23)
@@ -141,9 +167,7 @@ def step23(message):
         update_student("null", "surname", message.chat.id)
         update_student("null", "patronymic", message.chat.id)
         update_student("null", "name", message.chat.id)
-        ImStudent(message)
-    elif message.text == 'Назад':
-        bot.send_message(message.chat.id, "Вы вернулись в меню")
+        ImStudent1(message)
     else:
         msg = bot.send_message(message.chat.id, "Вы написали что-то не то и вас перебросило в начальное меню")
         start(message)
@@ -167,7 +191,7 @@ def proverka_proverki_goroda(message):
     elif message.text == 'Да':
         phone(message)
     elif message.text == 'Назад':
-        ImStudent(message)
+        ImStudent1(message)
     else:
         msg = bot.send_message(message.chat.id, "Выбери команду из меню")
         gorod(msg)
@@ -244,15 +268,43 @@ def proverka_proverki_pochtu(message):
     elif message.text == 'Да':
         Vvedenie_K_Testu(message)
     elif message.text == 'Назад':
-        phone(message)
+        vvedite_school(message)
     else:
         msg = bot.send_message(message.chat.id, "Выбери команду из меню")
-        vvedite_pochtu(msg)
+        vvedite_school(msg)
 
 
+def vvedite_school(message):
+    msg = bot.send_message(message.chat.id, 'Введите название вашего учебного заведения \n(Например "ГБОУ Школа №1488" или НИУ ВШЭ)')
+    bot.register_next_step_handler(msg, proverka_school)
 
 
-"""Добавь школу"""
+def proverka_school(message):
+    check_school = message.text
+    update_student(check_school, "school", message.chat.id)
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
+    no = types.KeyboardButton('Нет')
+    yes = types.KeyboardButton('Да')
+    back = types.KeyboardButton('Назад')
+    markup.add(yes, no, back)
+    msg = bot.send_message(message.chat.id, f"Ваше учебное заведение: {message.text}, вы уверены?", reply_markup=markup)
+    bot.register_next_step_handler(msg, proverka_proverki_school)
+
+
+def proverka_proverki_school(message):
+    if message.text == 'Нет':
+        update_student("null", "school", message.chat.id)
+        vvedite_school(message)
+    elif message.text == 'Да':
+        phone_number = check_phone
+        vvedite_pochtu(message)
+    elif message.text == 'Назад':
+        gorod(message)
+    else:
+        msg = bot.send_message(message.chat.id, "Выбери команду из меню")
+        phone(msg)
+
+
 def Vvedenie_K_Testu(message):
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
     no = types.KeyboardButton('Нет')
