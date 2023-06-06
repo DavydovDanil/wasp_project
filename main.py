@@ -79,11 +79,11 @@ def start(message):
     sqliteConnection = sqlite3.connect('kislyakovdatabase.db')
     cursor1 = sqliteConnection.cursor()
     sqlite_select_query = """SELECT COUNT(*) as num FROM
-    student_info WHERE id_v_chate LIKE '%1026734292%'"""
+    student_info WHERE id_v_chate LIKE \'""" + str(message.chat.id) + """\'"""
     cursor1.execute(sqlite_select_query)
     a = cursor1.fetchone()[0]
     bot.send_message(message.chat.id, a)
-    if a == 1:
+    if a == 1 or a == 0:
         markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
         organizer = types.KeyboardButton('Я организатор')
         uchenik = types.KeyboardButton('Я ученик')
