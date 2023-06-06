@@ -9,7 +9,19 @@ import sys
 
 def databasecreation_student():
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
-    sqlite_create_table_query = '''CREATE TABLE IF NOT EXISTS student_info(
+    #sqlite_create_table_query1 =
+
+    #sqlite_create_table_query2 =
+
+    #sqlite_create_table_query3 =
+                                    
+    #sqlite_create_table_query4 =
+
+    #sqlite_create_table_query5 =
+
+    #sqlite_create_table_query6 =
+    cursor = sqlite_connection.cursor()
+    cursor.execute('''CREATE TABLE IF NOT EXISTS student_info(
                                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                                     id_v_chate INTEGER NOT NULL,
                                     name TEXT,
@@ -21,13 +33,29 @@ def databasecreation_student():
                                     second_stage_result TEXT,
                                     school TEXT ,
                                     city TEXT ,
-                                    status TEXT );'''
-
-
-    cursor = sqlite_connection.cursor()
-    cursor.execute(sqlite_create_table_query)
+                                    status TEXT );''')
+    cursor.execute(''' CREATE TABLE IF NOT EXISTS organier_info(
+                                    login TEXT PRIMARY KEY NOT NULL,
+                                    password TEXT NOT NULL);''')
+    cursor.execute('''CREATE TABLE IF NOT EXISTS calendar_interview(
+                                    date TEXT PRIMARY KEY NOT NULL
+                                    time TEXT
+                                    student_info_id INTEGER);''')
+    cursor.execute('''CREATE TABLE IF NOT EXISTS calendar_ochniy_etap(
+                                    date TEXT PRIMARY KEY NOT NULL,
+                                    time TEXT,
+                                    student_info_id INTEGER);''')
+    cursor.execute('''CREATE TABLE IF NOT EXISTS tasks(
+                                    variant_number INTEGER PRIMARY KEY NOT NULL,
+                                    student_info_id INTEGER NOT NULL,
+                                    task_info_id INTEGER NOT NULL);''')
+    cursor.execute('''CREATE TABLE IF NOT EXISTS task_info(
+                                    id INTEGER PRIMARY KEY NOT NULL,
+                                    taskitself INTEGER NOT NULL,
+                                    correctanswer INTEGER NOT NULL);''')
     sqlite_connection.commit()
     cursor.close()
+
 
 
 def update_student(value, table, idvchate):
@@ -55,15 +83,14 @@ def start(message):
     cursor.execute(sqlite_insert_query)
     sqlite_connection.commit()
     cursor.close()
-    sqlite_connection1 = sqlite3.connect('kislyakovdatabase.db')
-    sqlite_select_query = """SELECT id_v_chate FROM
+    sqlite_select_query = """SELECT COUNT(*) FROM
     student_info WHERE id_v_chate LIKE \'""" + str(message.chat.id) + """\'"""
     cursor = sqlite_connection.cursor()
     cursor.execute(sqlite_select_query)
     sqlite_connection.commit()
     cursor.close()
-    if(sqlite_select_query!="null"):
-        msg = bot.send_message(message.chat.id, 'У вас уже есть аккаунт')
+    if(sqlite_select_query>1):
+        bot.send_message(message.chat.id, 'У вас больше одного аккаунта')
         sys.exit(0)
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
     organizer = types.KeyboardButton('Я организатор')
@@ -79,7 +106,7 @@ def start(message):
 def user_answer(message):
     if message.text == 'Я организатор':
         bot.send_message(message.chat.id, 'Введите ваш пароль')
-        # bot.register_next_step_handler(msgge, ImOrganiser)
+        bot.register_next_step_handler(msgge, ImOrganiser)
     elif message.text == 'Я ученик':
         markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
         back = types.KeyboardButton('Назад')
@@ -341,7 +368,5 @@ def step_back(message):
 def step2_back_handler(message):
     start(message)
 
-
-conn = sqlite3.connect('kislyakov.db', check_same_thread=False)
 
 bot.polling(none_stop=True)
