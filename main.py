@@ -265,7 +265,7 @@ def proverka_proverki_pochtu(message):
         update_student("null", "email", message.chat.id)
         vvedite_pochtu(message)
     elif message.text == 'Да':
-        Vvedenie_K_Testu(message)
+        vvedite_school(message)
     elif message.text == 'Назад':
         vvedite_school(message)
     else:
@@ -276,7 +276,6 @@ def proverka_proverki_pochtu(message):
 def vvedite_school(message):
     msg = bot.send_message(message.chat.id, 'Введите название вашего учебного заведения \n(Например "ГБОУ Школа №1488" или НИУ ВШЭ)')
     bot.register_next_step_handler(msg, proverka_school)
-
 
 def proverka_school(message):
     check_school = message.text
@@ -295,10 +294,9 @@ def proverka_proverki_school(message):
         update_student("null", "school", message.chat.id)
         vvedite_school(message)
     elif message.text == 'Да':
-        phone_number = check_phone
-        vvedite_pochtu(message)
+        Vvedenie_K_Testu(message)
     elif message.text == 'Назад':
-        gorod(message)
+        vvedite_pochtu(message)
     else:
         msg = bot.send_message(message.chat.id, "Выбери команду из меню")
         phone(msg)
