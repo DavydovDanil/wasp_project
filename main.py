@@ -9,19 +9,8 @@ import sys
 
 def databasecreation_student():
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
-    #sqlite_create_table_query1 =
 
-    #sqlite_create_table_query2 =
-
-    #sqlite_create_table_query3 =
-                                    
-    #sqlite_create_table_query4 =
-
-    #sqlite_create_table_query5 =
-
-    #sqlite_create_table_query6 =
-    cursor = sqlite_connection.cursor()
-    cursor.execute('''CREATE TABLE IF NOT EXISTS student_info(
+    sqlite_create_table_query = '''CREATE TABLE IF NOT EXISTS student_info(
                                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                                     id_v_chate INTEGER NOT NULL,
                                     name TEXT,
@@ -33,29 +22,14 @@ def databasecreation_student():
                                     second_stage_result TEXT,
                                     school TEXT ,
                                     city TEXT ,
-                                    status TEXT );''')
-    cursor.execute(''' CREATE TABLE IF NOT EXISTS organier_info(
-                                    login TEXT PRIMARY KEY NOT NULL,
-                                    password TEXT NOT NULL);''')
-    cursor.execute('''CREATE TABLE IF NOT EXISTS calendar_interview(
-                                    date TEXT PRIMARY KEY NOT NULL
-                                    time TEXT
-                                    student_info_id INTEGER);''')
-    cursor.execute('''CREATE TABLE IF NOT EXISTS calendar_ochniy_etap(
-                                    date TEXT PRIMARY KEY NOT NULL,
-                                    time TEXT,
-                                    student_info_id INTEGER);''')
-    cursor.execute('''CREATE TABLE IF NOT EXISTS tasks(
-                                    variant_number INTEGER PRIMARY KEY NOT NULL,
-                                    student_info_id INTEGER NOT NULL,
-                                    task_info_id INTEGER NOT NULL);''')
-    cursor.execute('''CREATE TABLE IF NOT EXISTS task_info(
-                                    id INTEGER PRIMARY KEY NOT NULL,
-                                    taskitself INTEGER NOT NULL,
-                                    correctanswer INTEGER NOT NULL);''')
+                                    status TEXT );'''
+
+
+    cursor = sqlite_connection.cursor()
+
+    cursor.execute(sqlite_create_table_query)
     sqlite_connection.commit()
     cursor.close()
-
 
 
 def update_student(value, table, idvchate):
@@ -83,30 +57,32 @@ def start(message):
     cursor.execute(sqlite_insert_query)
     sqlite_connection.commit()
     cursor.close()
-    sqlite_select_query = """SELECT COUNT(*) FROM
-    student_info WHERE id_v_chate LIKE \'""" + str(message.chat.id) + """\'"""
-    cursor = sqlite_connection.cursor()
-    cursor.execute(sqlite_select_query)
-    sqlite_connection.commit()
-    cursor.close()
-    if(sqlite_select_query>1):
+    sqliteConnection = sqlite3.connect('kislyakovdatabase.db')
+    cursor1 = sqliteConnection.cursor()
+    sqlite_select_query = """SELECT COUNT(*) as num FROM
+    student_info WHERE id_v_chate LIKE '%1026734292%'"""
+    cursor1.execute(sqlite_select_query)
+    a = cursor1.fetchone()[0]
+    bot.send_message(message.chat.id, a)
+    if a == 1:
+        markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
+        organizer = types.KeyboardButton('Я организатор')
+        uchenik = types.KeyboardButton('Я ученик')
+        zachem = types.KeyboardButton('Зачем нужен бот?')
+        markup.add(organizer, uchenik, zachem)
+        msg = bot.send_message(message.chat.id, 'Здравствуйте, это бот WASP Academy, выберите категорию запроса',
+                               reply_markup=markup)
+        bot.register_next_step_handler(msg, user_answer)
+    else:
         bot.send_message(message.chat.id, 'У вас больше одного аккаунта')
         sys.exit(0)
-    markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
-    organizer = types.KeyboardButton('Я организатор')
-    uchenik = types.KeyboardButton('Я ученик')
-    zachem = types.KeyboardButton('Зачем нужен бот?')
-    markup.add(organizer, uchenik, zachem)
-    msg = bot.send_message(message.chat.id, 'Здравствуйте, это бот WASP Academy, выберите категорию запроса',
-                           reply_markup=markup)
-    bot.register_next_step_handler(msg, user_answer)
 
 
 # exponation menu
 def user_answer(message):
     if message.text == 'Я организатор':
         bot.send_message(message.chat.id, 'Введите ваш пароль')
-        bot.register_next_step_handler(msgge, ImOrganiser)
+        # bot.register_next_step_handler(msgge, ImOrganiser)
     elif message.text == 'Я ученик':
         markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
         back = types.KeyboardButton('Назад')
@@ -243,26 +219,22 @@ def phone(message):
 
 
 def proverka_phone(message):
-    try:
-        check_phone = int(message.text)
-        update_student(check_phone, "phone", message.chat.id)
-    except:
-        message = bot.send_message(message.chat.id, "Введите номер телефона повторно")
-        phone(message)
+
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
     no = types.KeyboardButton('Нет')
     yes = types.KeyboardButton('Да')
     back = types.KeyboardButton('Назад')
     markup.add(yes, no, back)
-    msg = bot.send_message(message.chat.id, f"Ваш город: {message.text}, вы уверены?", reply_markup=markup)
+    msg = bot.send_message(message.chat.id, f"Ваш номер телефона: {message.text}, вы уверены?", reply_markup=markup)
     bot.register_next_step_handler(msg, proverka_proverki_phone)
-
+    update_student(message.text, "phone_number", message.chat.id)
 
 def proverka_proverki_phone(message):
     if message.text == 'Нет':
-        update_student("null", "phone", message.chat.id)
+        update_student("null", "phone_number", message.chat.id)
         phone(message)
     elif message.text == 'Да':
+
         vvedite_pochtu(message)
     elif message.text == 'Назад':
         gorod(message)
@@ -367,6 +339,7 @@ def step_back(message):
 @bot.message_handler(func=lambda message: message.text == 'Назад', content_types=['text'])
 def step2_back_handler(message):
     start(message)
+
 
 
 bot.polling(none_stop=True)
