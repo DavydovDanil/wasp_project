@@ -9,8 +9,8 @@ import sys
 
 def databasecreation_student():
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
-
-    sqlite_create_table_query = '''CREATE TABLE IF NOT EXISTS student_info(
+    cursor = sqlite_connection.cursor()
+    cursor.execute('''CREATE TABLE IF NOT EXISTS student_info(
                                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                                     id_v_chate INTEGER NOT NULL,
                                     name TEXT,
@@ -22,12 +22,31 @@ def databasecreation_student():
                                     second_stage_result TEXT,
                                     school TEXT ,
                                     city TEXT ,
-                                    status TEXT );'''
+                                    status TEXT );''')
 
+    cursor.execute('''CREATE TABLE IF NOT EXISTS organizer_info(
+                                        login TEXT PRIMARY KEY NOT NULL,
+                                        password TEXT NOT NULL);''')
 
-    cursor = sqlite_connection.cursor()
+    cursor.execute('''CREATE TABLE IF NOT EXISTS calendar_interview(
+                                            date_interview TEXT PRIMARY KEY NOT NULL,
+                                            time_interview TEXT,
+                                            student_info_id INTEGER);''')
 
-    cursor.execute(sqlite_create_table_query)
+    cursor.execute('''CREATE TABLE IF NOT EXISTS calendar_ochniy_etap(
+                                                date_interview TEXT PRIMARY KEY NOT NULL,
+                                                time_interview TEXT,
+                                                student_info_id INTEGER);''')
+
+    cursor.execute('''CREATE TABLE IF NOT EXISTS tasks(
+                                                variants INTEGER PRIMARY KEY NOT NULL,
+                                                student_info_id INTEGER NOT NULL,
+                                                task_info_id INTEGER NOT NULL);''')
+
+    cursor.execute('''CREATE TABLE IF NOT EXISTS task_info(
+                                                    id INTEGER PRIMARY KEY NOT NULL,
+                                                    taskitself INTEGER NOT NULL,
+                                                    correctanswer INTEGER NOT NULL);''')
     sqlite_connection.commit()
     cursor.close()
 
