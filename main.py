@@ -25,28 +25,44 @@ def databasecreation_student():
                                     status TEXT );''')
 
     cursor.execute('''CREATE TABLE IF NOT EXISTS organizer_info(
-                                        login TEXT PRIMARY KEY NOT NULL,
+                                        login TEXT PRIMARY KEY,
                                         password TEXT NOT NULL);''')
 
     cursor.execute('''CREATE TABLE IF NOT EXISTS calendar_interview(
-                                            date_interview TEXT PRIMARY KEY NOT NULL,
+                                            date_interview TEXT PRIMARY KEY,
                                             time_interview TEXT,
                                             student_info_id INTEGER);''')
 
     cursor.execute('''CREATE TABLE IF NOT EXISTS calendar_ochniy_etap(
-                                                date_interview TEXT PRIMARY KEY NOT NULL,
+                                                date_interview TEXT PRIMARY KEY,
                                                 time_interview TEXT,
                                                 student_info_id INTEGER);''')
 
     cursor.execute('''CREATE TABLE IF NOT EXISTS tasks(
-                                                variants INTEGER PRIMARY KEY NOT NULL,
-                                                student_info_id INTEGER NOT NULL,
-                                                task_info_id INTEGER NOT NULL);''')
+                                                user_id INTEGER PRIMARY KEY,
+                                                task_id_1 INTEGER,
+                                                task_id_2 INTEGER,
+                                                task_id_3 INTEGER,
+                                                task_id_4 INTEGER,
+                                                task_id_5 INTEGER,
+                                                user_answer_1 TEXT,
+                                                user_answer_2 TEXT,
+                                                user_answer_3 TEXT,
+                                                user_answer_4 TEXT,
+                                                user_answer_5 TEXT,
+                                                points_1 INTEGER,
+                                                points_2 INTEGER,
+                                                points_3 INTEGER,
+                                                points_4 INTEGER,
+                                                points_5 INTEGER,
+                                                answer_1 TEXT,
+                                                answer_2 TEXT,
+                                                answer_3 TEXT,
+                                                answer_4 TEXT,
+                                                answer_5 TEXT
+                                                 );''')
 
-    cursor.execute('''CREATE TABLE IF NOT EXISTS task_info(
-                                                    id INTEGER PRIMARY KEY NOT NULL,
-                                                    taskitself INTEGER NOT NULL,
-                                                    correctanswer INTEGER NOT NULL);''')
+
     sqlite_connection.commit()
     cursor.close()
 
@@ -79,11 +95,11 @@ def start(message):
     sqliteConnection = sqlite3.connect('kislyakovdatabase.db')
     cursor1 = sqliteConnection.cursor()
     sqlite_select_query = """SELECT COUNT(*) as num FROM
-    student_info WHERE id_v_chate LIKE '%1026734292%'"""
+    student_info WHERE id_v_chate LIKE \'""" + str(message.chat.id) + """\'"""
     cursor1.execute(sqlite_select_query)
     a = cursor1.fetchone()[0]
     bot.send_message(message.chat.id, a)
-    if a == 1:
+    if a == 1 or a == 0:
         markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
         organizer = types.KeyboardButton('Я организатор')
         uchenik = types.KeyboardButton('Я ученик')
@@ -97,7 +113,6 @@ def start(message):
         sys.exit(0)
 
 
-# exponation menu
 def user_answer(message):
     if message.text == 'Я организатор':
         bot.send_message(message.chat.id, 'Введите ваш пароль')
@@ -120,10 +135,7 @@ def user_answer(message):
         bot.register_next_step_handler(msge, step1)
 
 
-# def ImOrganiser(message):
-# bot.send_message(chat_id)
 
-# if student menu clicked
 def ImStudent1(message):
     msg = bot.send_message(message.chat.id,
                            'Вы были перенесены на этап регистрации. Введите имя (Пример: Антон)')
@@ -144,7 +156,8 @@ def ImStudent3(message):
     update_student(message.text, "surname", message.chat.id)
 
     bot.register_next_step_handler(msg, step22)
-# exception if user made a mistake
+
+
 def step1(message):
     if (message.text == 'Назад'):
         start(message)
@@ -153,7 +166,6 @@ def step1(message):
         start(message)
 
 
-# exception in name menu
 def step2(message):
     if (message.text == 'Назад'):
         start(message)
@@ -167,7 +179,6 @@ def step2(message):
         start(message)
 
 
-# confirmation after name menu
 def step22(message):
     update_student(message.text, "patronymic", message.chat.id)
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
@@ -181,7 +192,6 @@ def step22(message):
     bot.register_next_step_handler(msg, step23)
 
 
-# just exception
 def step23(message):
     if message.text == 'Да':
         gorod(message)
@@ -195,7 +205,6 @@ def step23(message):
         start(message)
 
 
-# user chooses city
 def gorod(message):
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
     back = types.KeyboardButton('Назад')
@@ -205,7 +214,6 @@ def gorod(message):
     bot.register_next_step_handler(msg, proverka_goroda)
 
 
-# city exception
 def proverka_proverki_goroda(message):
     if message.text == 'Нет':
         update_student("null", "city", message.chat.id)
@@ -219,7 +227,6 @@ def proverka_proverki_goroda(message):
         gorod(msg)
 
 
-# city exception exception
 def proverka_goroda(message):
     check_gorod = message.text
     update_student(check_gorod, "city", message.chat.id)
