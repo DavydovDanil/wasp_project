@@ -11,32 +11,18 @@ def databasecreation_student():
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
     cursor = sqlite_connection.cursor()
     cursor.execute('''CREATE TABLE IF NOT EXISTS student_info(
-                                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                                    id_v_chate INTEGER NOT NULL,
-                                    name TEXT,
-                                    surname TEXT,
-                                    patronymic TEXT,
-                                    email TEXT ,
-                                    phone_number INTEGER ,
-                                    first_stage_result TEXT,
-                                    second_stage_result TEXT,
-                                    school TEXT ,
-                                    city TEXT ,
-                                    status TEXT );''')
-
-    cursor.execute('''CREATE TABLE IF NOT EXISTS organizer_info(
-                                        login TEXT PRIMARY KEY,
-                                        password TEXT NOT NULL);''')
-
-    cursor.execute('''CREATE TABLE IF NOT EXISTS calendar_interview(
-                                            date_interview TEXT PRIMARY KEY,
-                                            time_interview TEXT,
-                                            student_info_id INTEGER);''')
-
-    cursor.execute('''CREATE TABLE IF NOT EXISTS calendar_ochniy_etap(
-                                                date_interview TEXT PRIMARY KEY,
-                                                time_interview TEXT,
-                                                student_info_id INTEGER);''')
+                                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                        id_v_chate INTEGER NOT NULL,
+                                        name TEXT,
+                                        surname TEXT,
+                                        patronymic TEXT,
+                                        email TEXT ,
+                                        phone_number INTEGER ,
+                                        first_stage_result TEXT,
+                                        second_stage_result TEXT,
+                                        school TEXT ,
+                                        city TEXT ,
+                                        status TEXT );''')
 
     cursor.execute('''CREATE TABLE IF NOT EXISTS tasks(
                                                 user_id INTEGER PRIMARY KEY,
@@ -59,8 +45,29 @@ def databasecreation_student():
                                                 answer_2 TEXT,
                                                 answer_3 TEXT,
                                                 answer_4 TEXT,
-                                                answer_5 TEXT
+                                                answer_5 TEXT,
+                                                FOREIGN KEY (user_id)  REFERENCES student_info(id)
                                                  );''')
+
+    cursor.execute('''CREATE TABLE IF NOT EXISTS organizer_info(
+                                        login TEXT PRIMARY KEY,
+                                        password TEXT NOT NULL);''')
+
+    cursor.execute('''CREATE TABLE IF NOT EXISTS calendar_interview(
+                                            date_interview TEXT PRIMARY KEY,
+                                            time_interview TEXT,
+                                            student_info_id INTEGER UNIQUE
+                                            );''')
+
+    cursor.execute('''CREATE TABLE IF NOT EXISTS calendar_ochniy_etap(
+                                                date_interview TEXT PRIMARY KEY,
+                                                time_interview TEXT,
+                                                student_info_id INTEGER);''')
+
+    cursor.execute('''CREATE TABLE IF NOT EXISTS task_info(
+                                                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                                    taskitself TEXT,
+                                                    type_id INTEGER);''')
 
 
     sqlite_connection.commit()
@@ -77,6 +84,86 @@ def update_student(value, table, idvchate):
     sqlite_connection.commit()
     cursor.close()
 
+def insert_test():
+    type_1_task_1 = "1.	Определите, в какой минимальной системе счисления может быть записано число 2537." \
+                    " Переведите число из этой системы счисления в десятичную."
+    type_2_task_1 = "2.	Напишите наименьшее целое число x, для которого истинно следующее высказывание:" \
+                    "НЕ ((X < 2) И (X > 5)) ИЛИ (X > 10)"
+    type_3_task_1 = "3.	Школьник работал с файлом C:\Documents\Education\Math\Math-Homework1.pdf. " \
+                    "Затем он поднялся на уровень вверх, создал там каталог Tasks, а в нем два каталога:" \
+                    " Homeworks и Tests. Школьник перенес директорию Math в директорию Homeworks. " \
+                    "Каким стало полное имя файла, с которым работал школьник, после сделанных им операций?"
+    type_4_task_1 = "4.	Ниже задан алгоритм вычисления значения функции F(n), где n – это натуральное число: " \
+                    "\nF(1) = 1; \nF(n) = F(n - 1) * (n + 1) * 2 \n Чему равно значение функции F(4)?"
+    type_5_task_1 = "5.	Перед вами программа, записанная на пяти языках программирования." \
+                    " Было проведено 10 запусков программы, при которых в качестве значений переменных s и t вводились следующие пары чисел:" \
+                    " \n(1, 2); (5, 4); (-10, 6); (9, 2); (1, -6); (11, 12); (-11, 12); (-10; 10); (12; -1); (-12; 1)." \
+                    "\nСколько было запусков, при которых программа напечатала слово «YES»?"
+    #bot.send_photo(message.chat.id, get("https://i0.wampi.ru/2019/11/12/image.png").content)
+    type_1_task_2 = "1.	Определите, в какой минимальной системе счисления может быть записано число 7531." \
+                   " Переведите число из этой системы счисления в десятичную."
+    type_2_task_2 = "2.	Напишите наименьшее целое число x, для которого истинно следующее высказывание:" \
+                    "\nНЕ ((X < 5) И (X > 8)) ИЛИ (X > 2)"
+    type_3_task_2 = "3.	Сотрудник компании работал с файлом E:\Sheets\Departments\Cloud\Salary.xlsx. " \
+                    "Затем он поднялся на два уровня вверх, создал там каталог Accounts, а в нем четыре каталога:" \
+                    " Cloud, IT, Sales, Marketing. " \
+                    "Сотрудник скопировал файл в директорию Accounts. Каким стало полное имя скопированного файла?"
+    type_4_task_2 = "4.	Ниже задан алгоритм вычисления значения функции F(n), где n – это натуральное число:" \
+                    "\nF(n) = n при n <= 2; \nF(n) = F(n - 1) * (n + 1) \nЧему равно значение функции F(5)?"
+    type_5_task_2 = "5.	Перед вами программа, записанная на пяти языках программирования. " \
+                    "Было проведено 10 запусков программы, при которых в качестве значений переменных s и t вводились следующие пары чисел: " \
+                    "\n(9, -5); (12, -1); (3, 0); (-9, 2); (1, -6); (11, 12); (-11, 12); (-5; 9); (5; 7); (7; 5)." \
+                    "\nСколько было запусков, при которых программа напечатала слово «YES»?"
+
+    type_1_task_3 = "1.	Определите, в какой минимальной системе счисления может быть записано число 5464." \
+                    " Переведите число из этой системы счисления в десятичную."
+    type_2_task_3 = "2.	Напишите наименьшее целое число x, для которого истинно следующее высказывание:" \
+                    "\nНЕ ((X < 0) И (X > 9)) ИЛИ (X > 9)"
+    type_3_task_3 = "3.	Программист работал с файлом D:\Application\Source\index.html. " \
+                    "Затем он поднялся на два уровня вверх, создал там каталог Pages, а в нем два каталога: " \
+                    "Debug, Release. Сотрудник переместил директорию Source в директорию Debug. " \
+                    "Каким стало полное имя файла, с которым работал программист, после сделанных им операций?"
+    type_4_task_3 = "4.	Ниже задан алгоритм вычисления значения функции F(n), где n – это натуральное число:" \
+                    "\nF(n) = n при n <= 3;" \
+                    "\nF(n) = F(n - 1) * (n + 1) * n " \
+                    "\nЧему равно значение функции F(5)?"
+    type_5_task_3 = "5.	Перед вами программа, записанная на пяти языках программирования. " \
+                    "Было проведено 10 запусков программы, при которых в качестве значений переменных s и t вводились следующие пары чисел: " \
+                    "\n(1, 0); (2, -1); (3, 7); (5, 8); (9, -6); (11, 12); (-11, 12); (-6; 9); (5; 7); (1; 5)." \
+                    "\nСколько было запусков, при которых программа напечатала слово «YES»?"
+
+    type_1_task_4 = "1.	Определите, в какой минимальной системе счисления может быть записано число 3421." \
+                    " Переведите число из этой системы счисления в десятичную."
+    type_2_task_4 = "2.	Напишите наименьшее целое число x, для которого истинно следующее высказывание:" \
+                    "\nНЕ ((X < 3) И (X > 4)) ИЛИ (X > 3)"
+    type_3_task_4 = "3.	Дизайнер работал с файлом F:\Assets\Project\mockup.ai. " \
+                    "Затем он поднялся на два уровня вверх, создал там каталог Mockups, а в нем два каталога: " \
+                    "Done, Doing. Сотрудник переместил файл в директорию Doing." \
+                    " Каким стало полное имя файла, с которым работал дизайнер, после сделанных им операций?"
+    type_4_task_4 = "4.	Ниже задан алгоритм вычисления значения функции F(n), где n – это натуральное число:" \
+                    "\nF(n) = n при n <= 1;" \
+                    "\nF(n) = F(n - 1) * (n + 1) * n" \
+                    "\nЧему равно значение функции F(3)?"
+    type_5_task_4 = "5.	Перед вами программа, записанная на пяти языках программирования. " \
+                    "Было проведено 10 запусков программы, при которых в качестве значений переменных s и t" \
+                    " вводились следующие пары чисел: " \
+                    "\n(11, 0); (6, -1); (7, 7); (5, 8); (-8, 5); (11, 12); (-11, 12); (-6; 9); (5; 7); (1; 5)." \
+                    "\nСколько было запусков, при которых программа напечатала слово «YES»?"
+
+    sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
+    sqlite_insert_query1 = """INSERT INTO task_info(taskitself,type_id)
+        VALUES(\'""" + str(type_1_task_1) + """\', 1),(\'""" + str(type_1_task_2) + """\', 1),(\'""" + str(type_1_task_3) + """\', 1),
+        (\'""" + str(type_1_task_4) + """\', 1),(\'""" + str(type_2_task_1) + """\', 2),(\'""" + str(type_2_task_2) + """\', 2),
+        (\'""" + str(type_2_task_3) + """\', 2),(\'""" + str(type_2_task_4) + """\', 2),(\'""" + str(type_3_task_1) + """\', 3),
+        (\'""" + str(type_3_task_2) + """\', 3),(\'""" + str(type_3_task_3) + """\', 3),(\'""" + str(type_3_task_4) + """\', 3),
+        (\'""" + str(type_4_task_1) + """\', 4),(\'""" + str(type_4_task_2) + """\', 4),(\'""" + str(type_4_task_3) + """\', 4),
+        (\'""" + str(type_4_task_4) + """\', 4),(\'""" + str(type_5_task_1) + """\', 5),(\'""" + str(type_5_task_2) + """\', 5),
+        (\'""" + str(type_5_task_3) + """\', 5),(\'""" + str(type_5_task_4) + """\', 5)"""
+    cursor = sqlite_connection.cursor()
+    cursor.execute(sqlite_insert_query1)
+    sqlite_connection.commit()
+    cursor.close()
+
 
 bot = telebot.TeleBot('6047835028:AAHha2Rn-1_THc9tEpSwvRaVn4N65qDZohI')
 
@@ -84,6 +171,7 @@ bot = telebot.TeleBot('6047835028:AAHha2Rn-1_THc9tEpSwvRaVn4N65qDZohI')
 @bot.message_handler(commands=['start'])
 def start(message):
     databasecreation_student()
+    insert_test()
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
     sqlite_insert_query = """INSERT INTO student_info
     (id_v_chate)
