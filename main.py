@@ -67,7 +67,8 @@ def databasecreation_student():
     cursor.execute('''CREATE TABLE IF NOT EXISTS task_info(
                                                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                                                     taskitself TEXT,
-                                                    type_id INTEGER);''')
+                                                    type_id INTEGER,
+                                                    answer INTEGER);''')
 
 
     sqlite_connection.commit()
@@ -151,14 +152,14 @@ def insert_test():
                     "\nСколько было запусков, при которых программа напечатала слово «YES»?"
 
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
-    sqlite_insert_query1 = """INSERT INTO task_info(taskitself,type_id)
-        VALUES(\'""" + str(type_1_task_1) + """\', 1),(\'""" + str(type_1_task_2) + """\', 1),(\'""" + str(type_1_task_3) + """\', 1),
-        (\'""" + str(type_1_task_4) + """\', 1),(\'""" + str(type_2_task_1) + """\', 2),(\'""" + str(type_2_task_2) + """\', 2),
-        (\'""" + str(type_2_task_3) + """\', 2),(\'""" + str(type_2_task_4) + """\', 2),(\'""" + str(type_3_task_1) + """\', 3),
-        (\'""" + str(type_3_task_2) + """\', 3),(\'""" + str(type_3_task_3) + """\', 3),(\'""" + str(type_3_task_4) + """\', 3),
-        (\'""" + str(type_4_task_1) + """\', 4),(\'""" + str(type_4_task_2) + """\', 4),(\'""" + str(type_4_task_3) + """\', 4),
-        (\'""" + str(type_4_task_4) + """\', 4),(\'""" + str(type_5_task_1) + """\', 5),(\'""" + str(type_5_task_2) + """\', 5),
-        (\'""" + str(type_5_task_3) + """\', 5),(\'""" + str(type_5_task_4) + """\', 5)"""
+    sqlite_insert_query1 = """INSERT INTO task_info(taskitself,type_id, answer)
+        VALUES(\'""" + str(type_1_task_1) + """\', 1, "1375"),(\'""" + str(type_1_task_2) + """\', 1, "3929"),(\'""" + str(type_1_task_3) + """\', 1,"1957"),
+        (\'""" + str(type_1_task_4) + """\', 1,"486"),(\'""" + str(type_2_task_1) + """\', 2,"2"),(\'""" + str(type_2_task_2) + """\', 2,"3"),
+        (\'""" + str(type_2_task_3) + """\', 2,"9"),(\'""" + str(type_2_task_4) + """\', 2,"3"),(\'""" + str(type_3_task_1) + """\', 3,"C:\Documents\Education\Tasks\Homeworks\Math\Math-Homework1.pdf"),
+        (\'""" + str(type_3_task_2) + """\', 3,"E:\Sheets\Accounts\Salary.xlsx"),(\'""" + str(type_3_task_3) + """\', 3,"D:\Pages\Debug\index.html"),(\'""" + str(type_3_task_4) + """\', 3,"F:\Mockups\Doing\mockup.ai"),
+        (\'""" + str(type_4_task_1) + """\', 4,"480"),(\'""" + str(type_4_task_2) + """\', 4,"240"),(\'""" + str(type_4_task_3) + """\', 4,"1800"),
+        (\'""" + str(type_4_task_4) + """\', 4,"2"),(\'""" + str(type_5_task_1) + """\', 5,"5"),(\'""" + str(type_5_task_2) + """\', 5,"5"),
+        (\'""" + str(type_5_task_3) + """\', 5,"5"),(\'""" + str(type_5_task_4) + """\', 5,"7")"""
     cursor = sqlite_connection.cursor()
     cursor.execute(sqlite_insert_query1)
     sqlite_connection.commit()
