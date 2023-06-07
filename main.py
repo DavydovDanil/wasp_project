@@ -3,6 +3,7 @@ import sqlite3
 from telebot import types
 import random
 import sys
+from  sqlalchemy.sql.expression import func, select
 #    update_student(surname1, "surname", message.chat.id)
   #  update_student(name1, "name", message.chat.id)
    # update_student(patronymic1, "patronymic", message.chat.id)
@@ -11,42 +12,64 @@ def databasecreation_student():
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
     cursor = sqlite_connection.cursor()
     cursor.execute('''CREATE TABLE IF NOT EXISTS student_info(
-                                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                                    id_v_chate INTEGER NOT NULL,
-                                    name TEXT,
-                                    surname TEXT,
-                                    patronymic TEXT,
-                                    email TEXT ,
-                                    phone_number INTEGER ,
-                                    first_stage_result TEXT,
-                                    second_stage_result TEXT,
-                                    school TEXT ,
-                                    city TEXT ,
-                                    status TEXT );''')
+                                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                        id_v_chate INTEGER NOT NULL,
+                                        name TEXT,
+                                        surname TEXT,
+                                        patronymic TEXT,
+                                        email TEXT ,
+                                        phone_number INTEGER ,
+                                        first_stage_result TEXT,
+                                        second_stage_result TEXT,
+                                        school TEXT ,
+                                        city TEXT ,
+                                        status TEXT );''')
+
+    cursor.execute('''CREATE TABLE IF NOT EXISTS tasks(
+                                                user_id INTEGER PRIMARY KEY,
+                                                task_id_1 INTEGER,
+                                                task_id_2 INTEGER,
+                                                task_id_3 INTEGER,
+                                                task_id_4 INTEGER,
+                                                task_id_5 INTEGER,
+                                                user_answer_1 TEXT,
+                                                user_answer_2 TEXT,
+                                                user_answer_3 TEXT,
+                                                user_answer_4 TEXT,
+                                                user_answer_5 TEXT,
+                                                points_1 INTEGER,
+                                                points_2 INTEGER,
+                                                points_3 INTEGER,
+                                                points_4 INTEGER,
+                                                points_5 INTEGER,
+                                                answer_1 TEXT,
+                                                answer_2 TEXT,
+                                                answer_3 TEXT,
+                                                answer_4 TEXT,
+                                                answer_5 TEXT,
+                                                FOREIGN KEY (user_id)  REFERENCES student_info(id)
+                                                 );''')
 
     cursor.execute('''CREATE TABLE IF NOT EXISTS organizer_info(
-                                        login TEXT PRIMARY KEY NOT NULL,
+                                        login TEXT PRIMARY KEY,
                                         password TEXT NOT NULL);''')
 
     cursor.execute('''CREATE TABLE IF NOT EXISTS calendar_interview(
-                                            date_interview TEXT PRIMARY KEY NOT NULL,
+                                            date_interview TEXT PRIMARY KEY,
                                             time_interview TEXT,
-                                            student_info_id INTEGER);''')
+                                            student_info_id INTEGER UNIQUE
+                                            );''')
 
     cursor.execute('''CREATE TABLE IF NOT EXISTS calendar_ochniy_etap(
-                                                date_interview TEXT PRIMARY KEY NOT NULL,
+                                                date_interview TEXT PRIMARY KEY,
                                                 time_interview TEXT,
                                                 student_info_id INTEGER);''')
 
-    cursor.execute('''CREATE TABLE IF NOT EXISTS tasks(
-                                                variants INTEGER PRIMARY KEY NOT NULL,
-                                                student_info_id INTEGER NOT NULL,
-                                                task_info_id INTEGER NOT NULL);''')
-
     cursor.execute('''CREATE TABLE IF NOT EXISTS task_info(
-                                                    id INTEGER PRIMARY KEY NOT NULL,
-                                                    taskitself INTEGER NOT NULL,
-                                                    correctanswer INTEGER NOT NULL);''')
+                                                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                                    taskitself TEXT,
+                                                    type_id INTEGER,
+                                                    answer INTEGER);''')
     sqlite_connection.commit()
     cursor.close()
 
@@ -62,12 +85,98 @@ def update_student(value, table, idvchate):
     cursor.close()
 
 
+def insert_test():
+    type_1_task_1 = "1.	Определите, в какой минимальной системе счисления может быть записано число 2537." \
+                    " Переведите число из этой системы счисления в десятичную."
+    type_2_task_1 = "2.	Напишите наименьшее целое число x, для которого истинно следующее высказывание:" \
+                    "НЕ ((X < 2) И (X > 5)) ИЛИ (X > 10)"
+    type_3_task_1 = "3.	Школьник работал с файлом C:\Documents\Education\Math\Math-Homework1.pdf. " \
+                    "Затем он поднялся на уровень вверх, создал там каталог Tasks, а в нем два каталога:" \
+                    " Homeworks и Tests. Школьник перенес директорию Math в директорию Homeworks. " \
+                    "Каким стало полное имя файла, с которым работал школьник, после сделанных им операций?"
+    type_4_task_1 = "4.	Ниже задан алгоритм вычисления значения функции F(n), где n – это натуральное число: " \
+                    "\nF(1) = 1; \nF(n) = F(n - 1) * (n + 1) * 2 \n Чему равно значение функции F(4)?"
+    type_5_task_1 = "5.	Перед вами программа, записанная на пяти языках программирования." \
+                    " Было проведено 10 запусков программы, при которых в качестве значений переменных s и t вводились следующие пары чисел:" \
+                    " \n(1, 2); (5, 4); (-10, 6); (9, 2); (1, -6); (11, 12); (-11, 12); (-10; 10); (12; -1); (-12; 1)." \
+                    "\nСколько было запусков, при которых программа напечатала слово «YES»?"
+    #bot.send_photo(message.chat.id, get("https://i0.wampi.ru/2019/11/12/image.png").content)
+    type_1_task_2 = "1.	Определите, в какой минимальной системе счисления может быть записано число 7531." \
+                   " Переведите число из этой системы счисления в десятичную."
+    type_2_task_2 = "2.	Напишите наименьшее целое число x, для которого истинно следующее высказывание:" \
+                    "\nНЕ ((X < 5) И (X > 8)) ИЛИ (X > 2)"
+    type_3_task_2 = "3.	Сотрудник компании работал с файлом E:\Sheets\Departments\Cloud\Salary.xlsx. " \
+                    "Затем он поднялся на два уровня вверх, создал там каталог Accounts, а в нем четыре каталога:" \
+                    " Cloud, IT, Sales, Marketing. " \
+                    "Сотрудник скопировал файл в директорию Accounts. Каким стало полное имя скопированного файла?"
+    type_4_task_2 = "4.	Ниже задан алгоритм вычисления значения функции F(n), где n – это натуральное число:" \
+                    "\nF(n) = n при n <= 2; \nF(n) = F(n - 1) * (n + 1) \nЧему равно значение функции F(5)?"
+    type_5_task_2 = "5.	Перед вами программа, записанная на пяти языках программирования. " \
+                    "Было проведено 10 запусков программы, при которых в качестве значений переменных s и t вводились следующие пары чисел: " \
+                    "\n(9, -5); (12, -1); (3, 0); (-9, 2); (1, -6); (11, 12); (-11, 12); (-5; 9); (5; 7); (7; 5)." \
+                    "\nСколько было запусков, при которых программа напечатала слово «YES»?"
+
+    type_1_task_3 = "1.	Определите, в какой минимальной системе счисления может быть записано число 5464." \
+                    " Переведите число из этой системы счисления в десятичную."
+    type_2_task_3 = "2.	Напишите наименьшее целое число x, для которого истинно следующее высказывание:" \
+                    "\nНЕ ((X < 0) И (X > 9)) ИЛИ (X > 9)"
+    type_3_task_3 = "3.	Программист работал с файлом D:\Application\Source\index.html. " \
+                    "Затем он поднялся на два уровня вверх, создал там каталог Pages, а в нем два каталога: " \
+                    "Debug, Release. Сотрудник переместил директорию Source в директорию Debug. " \
+                    "Каким стало полное имя файла, с которым работал программист, после сделанных им операций?"
+    type_4_task_3 = "4.	Ниже задан алгоритм вычисления значения функции F(n), где n – это натуральное число:" \
+                    "\nF(n) = n при n <= 3;" \
+                    "\nF(n) = F(n - 1) * (n + 1) * n " \
+                    "\nЧему равно значение функции F(5)?"
+    type_5_task_3 = "5.	Перед вами программа, записанная на пяти языках программирования. " \
+                    "Было проведено 10 запусков программы, при которых в качестве значений переменных s и t вводились следующие пары чисел: " \
+                    "\n(1, 0); (2, -1); (3, 7); (5, 8); (9, -6); (11, 12); (-11, 12); (-6; 9); (5; 7); (1; 5)." \
+                    "\nСколько было запусков, при которых программа напечатала слово «YES»?"
+
+    type_1_task_4 = "1.	Определите, в какой минимальной системе счисления может быть записано число 3421." \
+                    " Переведите число из этой системы счисления в десятичную."
+    type_2_task_4 = "2.	Напишите наименьшее целое число x, для которого истинно следующее высказывание:" \
+                    "\nНЕ ((X < 3) И (X > 4)) ИЛИ (X > 3)"
+    type_3_task_4 = "3.	Дизайнер работал с файлом F:\Assets\Project\mockup.ai. " \
+                    "Затем он поднялся на два уровня вверх, создал там каталог Mockups, а в нем два каталога: " \
+                    "Done, Doing. Сотрудник переместил файл в директорию Doing." \
+                    " Каким стало полное имя файла, с которым работал дизайнер, после сделанных им операций?"
+    type_4_task_4 = "4.	Ниже задан алгоритм вычисления значения функции F(n), где n – это натуральное число:" \
+                    "\nF(n) = n при n <= 1;" \
+                    "\nF(n) = F(n - 1) * (n + 1) * n" \
+                    "\nЧему равно значение функции F(3)?"
+    type_5_task_4 = "5.	Перед вами программа, записанная на пяти языках программирования. " \
+                    "Было проведено 10 запусков программы, при которых в качестве значений переменных s и t" \
+                    " вводились следующие пары чисел: " \
+                    "\n(11, 0); (6, -1); (7, 7); (5, 8); (-8, 5); (11, 12); (-11, 12); (-6; 9); (5; 7); (1; 5)." \
+                    "\nСколько было запусков, при которых программа напечатала слово «YES»?"
+
+    sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
+    sqlite_insert_query1 = """INSERT INTO task_info(taskitself,type_id, answer)
+        VALUES(\'""" + str(type_1_task_1) + """\', 1, "1375"),(\'""" + str(type_1_task_2) + """\', 1, "3929"),(\'""" + str(type_1_task_3) + """\', 1,"1957"),
+        (\'""" + str(type_1_task_4) + """\', 1,"486"),(\'""" + str(type_2_task_1) + """\', 2,"2"),(\'""" + str(type_2_task_2) + """\', 2,"3"),
+        (\'""" + str(type_2_task_3) + """\', 2,"9"),(\'""" + str(type_2_task_4) + """\', 2,"3"),(\'""" + str(type_3_task_1) + """\', 3,"C:\Documents\Education\Tasks\Homeworks\Math\Math-Homework1.pdf"),
+        (\'""" + str(type_3_task_2) + """\', 3,"E:\Sheets\Accounts\Salary.xlsx"),(\'""" + str(type_3_task_3) + """\', 3,"D:\Pages\Debug\index.html"),(\'""" + str(type_3_task_4) + """\', 3,"F:\Mockups\Doing\mockup.ai"),
+        (\'""" + str(type_4_task_1) + """\', 4,"480"),(\'""" + str(type_4_task_2) + """\', 4,"240"),(\'""" + str(type_4_task_3) + """\', 4,"1800"),
+        (\'""" + str(type_4_task_4) + """\', 4,"2"),(\'""" + str(type_5_task_1) + """\', 5,"5"),(\'""" + str(type_5_task_2) + """\', 5,"5"),
+        (\'""" + str(type_5_task_3) + """\', 5,"5"),(\'""" + str(type_5_task_4) + """\', 5,"7")"""
+    cursor = sqlite_connection.cursor()
+    cursor.execute(sqlite_insert_query1)
+    sqlite_connection.commit()
+    cursor.close()
+
+
+def select_test_ucheniku(type_id):
+    select.order_by(func.random())
+
+
 bot = telebot.TeleBot('6047835028:AAHha2Rn-1_THc9tEpSwvRaVn4N65qDZohI')
 
 
 @bot.message_handler(commands=['start'])
 def start(message):
     databasecreation_student()
+    insert_test()
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
     sqlite_insert_query = """INSERT INTO student_info
     (id_v_chate)
@@ -97,7 +206,6 @@ def start(message):
         sys.exit(0)
 
 
-# exponation menu
 def user_answer(message):
     if message.text == 'Я организатор':
         bot.send_message(message.chat.id, 'Введите ваш пароль')
@@ -120,10 +228,7 @@ def user_answer(message):
         bot.register_next_step_handler(msge, step1)
 
 
-# def ImOrganiser(message):
-# bot.send_message(chat_id)
 
-# if student menu clicked
 def ImStudent1(message):
     msg = bot.send_message(message.chat.id,
                            'Вы были перенесены на этап регистрации. Введите имя (Пример: Антон)')
@@ -144,7 +249,8 @@ def ImStudent3(message):
     update_student(message.text, "surname", message.chat.id)
 
     bot.register_next_step_handler(msg, step22)
-# exception if user made a mistake
+
+
 def step1(message):
     if (message.text == 'Назад'):
         start(message)
@@ -153,7 +259,6 @@ def step1(message):
         start(message)
 
 
-# exception in name menu
 def step2(message):
     if (message.text == 'Назад'):
         start(message)
@@ -167,7 +272,6 @@ def step2(message):
         start(message)
 
 
-# confirmation after name menu
 def step22(message):
     update_student(message.text, "patronymic", message.chat.id)
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
@@ -181,7 +285,6 @@ def step22(message):
     bot.register_next_step_handler(msg, step23)
 
 
-# just exception
 def step23(message):
     if message.text == 'Да':
         gorod(message)
@@ -195,7 +298,6 @@ def step23(message):
         start(message)
 
 
-# user chooses city
 def gorod(message):
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
     back = types.KeyboardButton('Назад')
@@ -205,7 +307,6 @@ def gorod(message):
     bot.register_next_step_handler(msg, proverka_goroda)
 
 
-# city exception
 def proverka_proverki_goroda(message):
     if message.text == 'Нет':
         update_student("null", "city", message.chat.id)
@@ -219,7 +320,6 @@ def proverka_proverki_goroda(message):
         gorod(msg)
 
 
-# city exception exception
 def proverka_goroda(message):
     check_gorod = message.text
     update_student(check_gorod, "city", message.chat.id)
@@ -336,12 +436,28 @@ def proverka_gotovnosti_k_testu(message):
     if message.text == 'Нет':
         bot.send_message(message.chat.id, 'Возвращайся, когда будешь готов!')
     elif message.text == 'Да':
-        bot.send_message(message.chat.id, 'Теста пока нет')
+        bot.send_message(message.chat.id, 'Поехали!')
+        menu_testa(message)
     elif message.text == 'Назад':
         vvedite_pochtu(message)
     else:
         msg = bot.send_message(message.chat.id, "Выбери команду из меню")
         Vvedenie_K_Testu(msg)
+
+def menu_testa(message):
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
+    zadanie_1 = types.KeyboardButton('Задание 1')
+    zadanie_2 = types.KeyboardButton('Задание 2')
+    zadanie_3 = types.KeyboardButton('Задание 3')
+    zadanie_4 = types.KeyboardButton('Задание 4')
+    zadanie_5 = types.KeyboardButton('Задание 5')
+    markup.add(zadanie_1, zadanie_2, zadanie_3, zadanie_4, zadanie_5)
+    msg = bot.send_message(message.chat.id, 'Тест состоит из 5 заданий, выбери задание и решай его. Если не знаешь, как решить задание, можешь перейти к другому', reply_markup=markup)
+    bot.register_next_step_handler(msg, raspredelenie)
+
+
+def raspredelenie:
+
 
 
 @bot.message_handler(content_types=["text"])
