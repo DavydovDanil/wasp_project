@@ -2,8 +2,8 @@ import telebot
 import sqlite3
 from telebot import types
 import random
+from random import random, randrange, randint
 import sys
-from  sqlalchemy.sql.expression import func, select
 #    update_student(surname1, "surname", message.chat.id)
   #  update_student(name1, "name", message.chat.id)
    # update_student(patronymic1, "patronymic", message.chat.id)
@@ -37,11 +37,11 @@ def databasecreation_student():
                                                 user_answer_3 TEXT,
                                                 user_answer_4 TEXT,
                                                 user_answer_5 TEXT,
-                                                points_1 INTEGER,
-                                                points_2 INTEGER,
-                                                points_3 INTEGER,
-                                                points_4 INTEGER,
-                                                points_5 INTEGER,
+                                                points_1 TEXT,
+                                                points_2 TEXT,
+                                                points_3 TEXT,
+                                                points_4 TEXT,
+                                                points_5 TEXT,
                                                 answer_1 TEXT,
                                                 answer_2 TEXT,
                                                 answer_3 TEXT,
@@ -70,6 +70,8 @@ def databasecreation_student():
                                                     taskitself TEXT,
                                                     type_id INTEGER,
                                                     answer INTEGER);''')
+
+
     sqlite_connection.commit()
     cursor.close()
 
@@ -83,7 +85,6 @@ def update_student(value, table, idvchate):
     cursor.execute(sqlite_update_query)
     sqlite_connection.commit()
     cursor.close()
-
 
 def insert_test():
     type_1_task_1 = "1.	Определите, в какой минимальной системе счисления может быть записано число 2537." \
@@ -152,22 +153,147 @@ def insert_test():
                     "\nСколько было запусков, при которых программа напечатала слово «YES»?"
 
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
-    sqlite_insert_query1 = """INSERT INTO task_info(taskitself,type_id, answer)
-        VALUES(\'""" + str(type_1_task_1) + """\', 1, "1375"),(\'""" + str(type_1_task_2) + """\', 1, "3929"),(\'""" + str(type_1_task_3) + """\', 1,"1957"),
-        (\'""" + str(type_1_task_4) + """\', 1,"486"),(\'""" + str(type_2_task_1) + """\', 2,"2"),(\'""" + str(type_2_task_2) + """\', 2,"3"),
-        (\'""" + str(type_2_task_3) + """\', 2,"9"),(\'""" + str(type_2_task_4) + """\', 2,"3"),(\'""" + str(type_3_task_1) + """\', 3,"C:\Documents\Education\Tasks\Homeworks\Math\Math-Homework1.pdf"),
-        (\'""" + str(type_3_task_2) + """\', 3,"E:\Sheets\Accounts\Salary.xlsx"),(\'""" + str(type_3_task_3) + """\', 3,"D:\Pages\Debug\index.html"),(\'""" + str(type_3_task_4) + """\', 3,"F:\Mockups\Doing\mockup.ai"),
-        (\'""" + str(type_4_task_1) + """\', 4,"480"),(\'""" + str(type_4_task_2) + """\', 4,"240"),(\'""" + str(type_4_task_3) + """\', 4,"1800"),
-        (\'""" + str(type_4_task_4) + """\', 4,"2"),(\'""" + str(type_5_task_1) + """\', 5,"5"),(\'""" + str(type_5_task_2) + """\', 5,"5"),
-        (\'""" + str(type_5_task_3) + """\', 5,"5"),(\'""" + str(type_5_task_4) + """\', 5,"7")"""
+    sqlite_check_query = """SELECT COUNT(id) FROM task_info"""
+    cursor1 = sqlite_connection.cursor()
+    cursor1.execute(sqlite_check_query)
+    a = cursor1.fetchone()[0]
+    if(a==0):
+        sqlite_insert_query1 = """INSERT INTO task_info(taskitself,type_id, answer)
+                VALUES(\'""" + str(type_1_task_1) + """\', 1, "1375"),(\'""" + str(
+            type_1_task_2) + """\', 1, "3929"),(\'""" + str(type_1_task_3) + """\', 1,"1957"),
+                (\'""" + str(type_1_task_4) + """\', 1,"486"),(\'""" + str(type_2_task_1) + """\', 2,"2"),(\'""" + str(
+            type_2_task_2) + """\', 2,"3"),
+                (\'""" + str(type_2_task_3) + """\', 2,"9"),(\'""" + str(type_2_task_4) + """\', 2,"3"),(\'""" + str(
+            type_3_task_1) + """\', 3,"C:\Documents\Education\Tasks\Homeworks\Math\Math-Homework1.pdf"),
+                (\'""" + str(type_3_task_2) + """\', 3,"E:\Sheets\Accounts\Salary.xlsx"),(\'""" + str(
+            type_3_task_3) + """\', 3,"D:\Pages\Debug\index.html"),(\'""" + str(type_3_task_4) + """\', 3,"F:\Mockups\Doing\mockup.ai"),
+                (\'""" + str(type_4_task_1) + """\', 4,"480"),(\'""" + str(
+            type_4_task_2) + """\', 4,"240"),(\'""" + str(type_4_task_3) + """\', 4,"1800"),
+                (\'""" + str(type_4_task_4) + """\', 4,"2"),(\'""" + str(type_5_task_1) + """\', 5,"5"),(\'""" + str(
+            type_5_task_2) + """\', 5,"5"),
+                (\'""" + str(type_5_task_3) + """\', 5,"5"),(\'""" + str(type_5_task_4) + """\', 5,"7")"""
+        cursor = sqlite_connection.cursor()
+        cursor.execute(sqlite_insert_query1)
+        sqlite_connection.commit()
+        cursor.close()
+
+
+def select_random_test_task(task_type):
+    sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
     cursor = sqlite_connection.cursor()
-    cursor.execute(sqlite_insert_query1)
+    cursor.execute(f"""SELECT id FROM task_info
+        WHERE type_id = {task_type};""")
+    rows = cursor.fetchall()
+    A = [elt[0] for elt in rows]
+    if(task_type == 1):
+        random_task = randint(1, 4)
+    elif (task_type == 2):
+        random_task = randint(5, 8)
+    elif(task_type == 3):
+        random_task = randint(9, 12)
+    elif(task_type == 4):
+        random_task = randint(13, 16)
+    elif(task_type == 5):
+        random_task = randint(17, 20)
     sqlite_connection.commit()
     cursor.close()
+    return random_task
 
 
-def select_test_ucheniku(type_id):
-    select.order_by(func.random())
+def select_answer(task_id):
+    sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
+    cursor = sqlite_connection.cursor()
+    cursor.execute(f"""SELECT answer FROM task_info
+            WHERE id = {task_id};""")
+    rows = cursor.fetchall()
+    A = [elt[0] for elt in rows]
+    sqlite_connection.commit()
+    cursor.close()
+    return A[0]
+
+
+def select_instruction_task(task_id):
+    sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
+    cursor = sqlite_connection.cursor()
+    cursor.execute(f"""SELECT taskitself FROM task_info
+                WHERE id = {task_id};""")
+    rows = cursor.fetchall()
+    A = [elt[0] for elt in rows]
+    sqlite_connection.commit()
+    cursor.close()
+    return A[0]
+
+
+def select_sozdanniy_varik1(user_id):
+    sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
+    cursor = sqlite_connection.cursor()
+    cursor.execute(f"""SELECT task_id_1 FROM tasks
+                    WHERE user_id = {user_id};""")
+    rows = cursor.fetchall()
+    A = [elt[0] for elt in rows]
+    sqlite_connection.commit()
+    cursor.close()
+    return A[0]
+
+
+def select_sozdanniy_varik2(user_id):
+    sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
+    cursor = sqlite_connection.cursor()
+    cursor.execute(f"""SELECT task_id_2 FROM tasks
+                    WHERE user_id = {user_id};""")
+    rows = cursor.fetchall()
+    A = [elt[0] for elt in rows]
+    sqlite_connection.commit()
+    cursor.close()
+    return A[0]
+
+
+def select_sozdanniy_varik3(user_id):
+    sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
+    cursor = sqlite_connection.cursor()
+    cursor.execute(f"""SELECT task_id_3 FROM tasks
+                    WHERE user_id = {user_id};""")
+    rows = cursor.fetchall()
+    A = [elt[0] for elt in rows]
+    sqlite_connection.commit()
+    cursor.close()
+    return A[0]
+
+
+def select_sozdanniy_varik4(user_id):
+    sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
+    cursor = sqlite_connection.cursor()
+    cursor.execute(f"""SELECT task_id_4 FROM tasks
+                    WHERE user_id = {user_id};""")
+    rows = cursor.fetchall()
+    A = [elt[0] for elt in rows]
+    sqlite_connection.commit()
+    cursor.close()
+    return A[0]
+
+
+def select_sozdanniy_varik5(user_id):
+    sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
+    cursor = sqlite_connection.cursor()
+    cursor.execute(f"""SELECT task_id_5 FROM tasks
+                    WHERE user_id = {user_id};""")
+    rows = cursor.fetchall()
+    A = [elt[0] for elt in rows]
+    sqlite_connection.commit()
+    cursor.close()
+    return A[0]
+
+
+def select_user_id(id_v_chate):
+    sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
+    cursor = sqlite_connection.cursor()
+    cursor.execute(f"""SELECT id FROM student_info
+                        WHERE id_v_chate = {id_v_chate};""")
+    rows = cursor.fetchall()
+    A = [elt[0] for elt in rows]
+    sqlite_connection.commit()
+    cursor.close()
+    return A[0]
 
 
 bot = telebot.TeleBot('6047835028:AAHha2Rn-1_THc9tEpSwvRaVn4N65qDZohI')
@@ -178,19 +304,17 @@ def start(message):
     databasecreation_student()
     insert_test()
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
+    cursor = sqlite_connection.cursor()
     sqlite_insert_query = """INSERT INTO student_info
     (id_v_chate)
     VALUES(\'""" + str(message.chat.id) + """\')"""
     cursor = sqlite_connection.cursor()
     cursor.execute(sqlite_insert_query)
     sqlite_connection.commit()
-    cursor.close()
-    sqliteConnection = sqlite3.connect('kislyakovdatabase.db')
-    cursor1 = sqliteConnection.cursor()
     sqlite_select_query = """SELECT COUNT(*) as num FROM
     student_info WHERE id_v_chate LIKE \'""" + str(message.chat.id) + """\'"""
-    cursor1.execute(sqlite_select_query)
-    a = cursor1.fetchone()[0]
+    cursor.execute(sqlite_select_query)
+    a = cursor.fetchone()[0]
     bot.send_message(message.chat.id, a)
     if a == 1 or a == 0:
         markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
@@ -200,6 +324,7 @@ def start(message):
         markup.add(organizer, uchenik, zachem)
         msg = bot.send_message(message.chat.id, 'Здравствуйте, это бот WASP Academy, выберите категорию запроса',
                                reply_markup=markup)
+        cursor.close()
         bot.register_next_step_handler(msg, user_answer)
     else:
         bot.send_message(message.chat.id, 'У вас больше одного аккаунта')
@@ -445,6 +570,23 @@ def proverka_gotovnosti_k_testu(message):
         Vvedenie_K_Testu(msg)
 
 def menu_testa(message):
+    zadanie1 = select_random_test_task(1)
+    zadanie2 = select_random_test_task(2)
+    zadanie3 = select_random_test_task(3)
+    zadanie4 = select_random_test_task(4)
+    zadanie5 = select_random_test_task(5)
+    answer1 = select_answer(zadanie1)
+    answer2 = select_answer(zadanie2)
+    otvet3 = select_answer(zadanie3)
+    answer4 = select_answer(zadanie4)
+    answer5 = select_answer(zadanie5)
+    sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
+    cursor = sqlite_connection.cursor()
+    cursor.execute(f"""INSERT INTO tasks
+        (task_id_1, task_id_2, task_id_3, task_id_4, task_id_5, answer_1, answer_2, answer_3, answer_4, answer_5)
+        VALUES({zadanie1}, {zadanie2}, {zadanie3}, {zadanie4}, {zadanie5}, {answer1}, {answer2}, {answer4}, {answer4}, {answer5});""")
+    sqlite_connection.commit()
+    cursor.close()
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
     zadanie_1 = types.KeyboardButton('Задание 1')
     zadanie_2 = types.KeyboardButton('Задание 2')
@@ -456,8 +598,28 @@ def menu_testa(message):
     bot.register_next_step_handler(msg, raspredelenie)
 
 
-def raspredelenie:
-
+def raspredelenie(message):
+    if(message.text == 'Задание 1'):
+        markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
+        zadanie = select_sozdanniy_varik1(select_user_id(message.chat.id))
+        instruction = select_instruction_task(zadanie)
+        bot.send_message(message.chat.id, instruction)
+    elif(message.text == 'Задание 2'):
+        zadanie = select_sozdanniy_varik2(select_user_id(message.chat.id))
+        instruction = select_instruction_task(zadanie)
+        bot.send_message(message.chat.id, instruction)
+    elif (message.text == 'Задание 3'):
+        zadanie = select_sozdanniy_varik3(select_user_id(message.chat.id))
+        instruction = select_instruction_task(zadanie)
+        bot.send_message(message.chat.id, instruction)
+    elif (message.text == 'Задание 4'):
+        zadanie = select_sozdanniy_varik4(select_user_id(message.chat.id))
+        instruction = select_instruction_task(zadanie)
+        bot.send_message(message.chat.id, instruction)
+    elif (message.text == 'Задание 5'):
+        zadanie = select_sozdanniy_varik5(select_user_id(message.chat.id))
+        instruction = select_instruction_task(zadanie)
+        bot.send_message(message.chat.id, instruction)
 
 
 @bot.message_handler(content_types=["text"])
