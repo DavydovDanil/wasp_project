@@ -37,11 +37,11 @@ def databasecreation_student():
                                                 user_answer_3 TEXT,
                                                 user_answer_4 TEXT,
                                                 user_answer_5 TEXT,
-                                                points_1 TEXT,
-                                                points_2 TEXT,
-                                                points_3 TEXT,
-                                                points_4 TEXT,
-                                                points_5 TEXT,
+                                                points_1 INTEGER,
+                                                points_2 INTEGER,
+                                                points_3 INTEGER,
+                                                points_4 INTEGER,
+                                                points_5 INTEGER,
                                                 answer_1 TEXT,
                                                 answer_2 TEXT,
                                                 answer_3 TEXT,
@@ -211,6 +211,17 @@ def select_answer(task_id):
     cursor.close()
     return A[0]
 
+def select_answer_by_id(answer, user_id):
+    sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
+    cursor = sqlite_connection.cursor()
+    cursor.execute(f"""SELECT {answer} FROM tasks
+                WHERE user_id = {user_id};""")
+    rows = cursor.fetchall()
+    A = [elt[0] for elt in rows]
+    sqlite_connection.commit()
+    cursor.close()
+    return A[0]
+
 
 def select_instruction_task(task_id):
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
@@ -295,6 +306,16 @@ def select_user_id(id_v_chate):
     cursor.close()
     return A[0]
 
+
+def insert_points(points_tasknumber, value, user_id):
+    sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
+    sqlite_update_query = f"""UPDATE tasks
+     SET {points_tasknumber} = {value}
+     WHERE user_id = {user_id}"""
+    cursor = sqlite_connection.cursor()
+    cursor.execute(sqlite_update_query)
+    sqlite_connection.commit()
+    cursor.close()
 
 bot = telebot.TeleBot('6047835028:AAHha2Rn-1_THc9tEpSwvRaVn4N65qDZohI')
 
@@ -478,7 +499,6 @@ def proverka_proverki_phone(message):
         update_student("null", "phone_number", message.chat.id)
         phone(message)
     elif message.text == 'Да':
-
         vvedite_pochtu(message)
     elif message.text == 'Назад':
         gorod(message)
@@ -631,13 +651,31 @@ def raspredelenie(message):
         markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
         back = types.KeyboardButton('Назад')
         markup.add(back)
-        zadanie = select_sozdanniy_varik2(select_user_id(message.chat.id))
+        zadanie = select_sozdanniy_varik5(select_user_id(message.chat.id))
         instruction = select_instruction_task(zadanie)
         msg = bot.send_message(message.chat.id, instruction, reply_markup=markup)
         bot.register_next_step_handler(msg, zadanie5_acceptage)
     elif(message.text == 'Я готов сдать (перед тем, как сдать, проверь, все ли задания ты решил)'):
-        msg = bot.send_message(message.chat.id, "Ты написал тест, жди результатов")
-
+        if(select_answer_by_id("user_answer_1", message.chat.id) == select_answer_by_id("answer_1", message.chat.id)):
+            insert_points("task_id_1", 2, select_user_id(message.chat.id))
+        else:
+            insert_points("task_id_1", 0, select_user_id(message.chat.id))
+        if (select_answer_by_id("user_answer_2", message.chat.id) == select_answer_by_id("answer_2", message.chat.id)):
+            insert_points("task_id_2", 2, select_user_id(message.chat.id))
+        else:
+            insert_points("task_id_2", 0, select_user_id(message.chat.id))
+        if (select_answer_by_id("user_answer_3", message.chat.id) == select_answer_by_id("answer_3", message.chat.id)):
+            insert_points("task_id_3", 2, select_user_id(message.chat.id))
+        else:
+            insert_points("task_id_3", 0, select_user_id(message.chat.id))
+        if (select_answer_by_id("user_answer_4", message.chat.id) == select_answer_by_id("answer_4", message.chat.id)):
+            insert_points("task_id_4", 2, select_user_id(message.chat.id))
+        else:
+            insert_points("task_id_4", 0, select_user_id(message.chat.id))
+        if (select_answer_by_id("user_answer_5", message.chat.id) == select_answer_by_id("answer_5", message.chat.id)):
+            insert_points("task_id_5", 2, select_user_id(message.chat.id))
+        else:
+            insert_points("task_id_5", 0, select_user_id(message.chat.id))
 
 def zadanie1_acceptage(message):
     if(message.text == 'Назад'):
