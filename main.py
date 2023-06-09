@@ -361,7 +361,7 @@ def ImStudent1(message):
 
 def ImStudent2(message):
     msg = bot.send_message(message.chat.id,
-                           'Введите фамилию(Пример: Кисляков)')
+                           'Введите фамилию (Пример: Кисляков)')
     update_student(message.text,"name",message.chat.id)
 
 
@@ -370,7 +370,7 @@ def ImStudent2(message):
 
 def ImStudent3(message):
     msg = bot.send_message(message.chat.id,
-                           'Введите отчество(Пример: Юрьевич)')
+                           'Введите отчество (Пример: Юрьевич)')
     update_student(message.text, "surname", message.chat.id)
 
     bot.register_next_step_handler(msg, step22)
