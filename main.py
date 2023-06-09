@@ -705,7 +705,8 @@ def menu_testa(message):
     cursor = sqlite_connection.cursor()
     cursor.execute(f"""INSERT INTO tasks
         (task_id_1, task_id_2, task_id_3, task_id_4, task_id_5, answer_1, answer_2, answer_3, answer_4, answer_5)
-        VALUES({zadanie1}, {zadanie2}, {zadanie3}, {zadanie4}, {zadanie5}, {answer1}, {answer2}, {answer4}, {answer4}, {answer5});""")
+        VALUES({zadanie1}, {zadanie2}, {zadanie3}, {zadanie4}, {zadanie5}, {answer1}, {answer2}, {answer4}, {answer4}, {answer5});""") #ДОДЕЛАТЬ НОРМАЛЬНЫЙ ОТВЕТ ДЛЯ НОМЕРА 3
+
     sqlite_connection.commit()
     cursor.close()
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
