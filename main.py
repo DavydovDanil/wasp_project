@@ -404,12 +404,11 @@ def ImOrganiser(message):
 
 def OrganizerMenu1(message):
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
-    tasks = types.KeyboardButton('Работа с банком заданий')
     tasks_quota = types.KeyboardButton('Выбрать квоту зачисленных')
     calendar_changes = types.KeyboardButton('Внести временные\nслоты в календарь')
     info_about_student = types.KeyboardButton('Узнать информацию об ученике')
     other_buttons = types.KeyboardButton('Другие запросы (2 часть)')
-    markup.add(tasks, tasks_quota, calendar_changes, info_about_student, other_buttons)
+    markup.add(tasks_quota, calendar_changes, info_about_student, other_buttons)
     msg = bot.send_message(message.chat.id, 'Выберите категорию запроса',
                            reply_markup=markup)
     bot.register_next_step_handler(msg, OrganizerIf)
@@ -417,12 +416,12 @@ def OrganizerMenu1(message):
 
 def OrganizerMenu1(message):
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
-    tasks = types.KeyboardButton('Работа с банком заданий')
-    tasks_quota = types.KeyboardButton('Выбрать квоту зачисленных')
-    calendar_changes = types.KeyboardButton('Внести временные\nслоты в календарь')
-    info_about_student = types.KeyboardButton('Узнать информацию об ученике')
-    other_buttons = types.KeyboardButton('Другие запросы (2 часть)')
-    markup.add(tasks, tasks_quota, calendar_changes, info_about_student, other_buttons)
+    status = types.KeyboardButton('Выбрать статус кандидата')
+    group_message = types.KeyboardButton('Оповестить всех')
+    next_etap = types.KeyboardButton('Отправить приглашение на следующий этап')
+    other_buttons = types.KeyboardButton('Другие запросы (1 часть)')
+    ochniy_etap_results = types.KeyboardButton('Внести результаты по очному этапу')
+    markup.add(status,group_message,next_etap, other_buttons,ochniy_etap_results)
     msg = bot.send_message(message.chat.id, 'Выберите категорию запроса',
                            reply_markup=markup)
     bot.register_next_step_handler(msg, OrganizerIf)
@@ -441,24 +440,12 @@ def OrganizerMenu2(message):
     bot.register_next_step_handler(msg, OrganizerIf)
 
 
-def OrganizerMenu3(message):
-    markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
-    ochiy_etap_results = types.KeyboardButton('Выбрать статус кандидата')
-    spisok_zayavok = types.KeyboardButton('Просмотреть список заявок')
-    other_buttons = types.KeyboardButton('Другие запросы (1 часть)')
-    markup.add(ochiy_etap_results, spisok_zayavok, other_buttons)
-    msg = bot.send_message(message.chat.id, 'Выберите категорию запроса',
-                           reply_markup=markup)
-    bot.register_next_step_handler(msg, OrganizerIf)
-
 
 def OrganizerIf(message):
     if (message.text == 'Другие запросы (2 часть)'):
-        OrganizerMenu2(message)
-    elif (message.text == 'Другие запросы (3 часть)'):
-        OrganizerMenu3(message)
-    elif (message.text == 'Другие запросы (1 часть)'):
         OrganizerMenu1(message)
+    elif (message.text == 'Другие запросы (1 часть)'):
+        OrganizerMenu2(message)
 
 
 def ImStudent1(message):
