@@ -321,6 +321,18 @@ def insert_points(points_tasknumber, value, user_id):
     cursor.close()
 
 
+def select_points(user_id, points_column):
+    sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
+    cursor = sqlite_connection.cursor()
+    cursor.execute(f"""SELECT """ + points_column + f""" FROM tasks
+                            WHERE user_id = {user_id};""")
+    rows = cursor.fetchall()
+    A = [elt[0] for elt in rows]
+    sqlite_connection.commit()
+    cursor.close()
+    return A[0]
+
+
 bot = telebot.TeleBot('6047835028:AAHha2Rn-1_THc9tEpSwvRaVn4N65qDZohI')
 
 
@@ -706,7 +718,6 @@ def menu_testa(message):
     cursor.execute(f"""INSERT INTO tasks
         (task_id_1, task_id_2, task_id_3, task_id_4, task_id_5, answer_1, answer_2, answer_3, answer_4, answer_5)
         VALUES({zadanie1}, {zadanie2}, {zadanie3}, {zadanie4}, {zadanie5}, {answer1}, {answer2}, {answer4}, {answer4}, {answer5});""") #ДОДЕЛАТЬ НОРМАЛЬНЫЙ ОТВЕТ ДЛЯ НОМЕРА 3
-
     sqlite_connection.commit()
     cursor.close()
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
@@ -791,6 +802,20 @@ def raspredelenie(message):
             insert_points("points_5", 2, select_user_id(message.chat.id))
         else:
             insert_points("points_5", 0, select_user_id(message.chat.id))
+        task1_result = select_points(select_user_id(message.chat.id), "points_1")
+        task2_result = select_points(select_user_id(message.chat.id), "points_2")
+        task3_result = select_points(select_user_id(message.chat.id), "points_3")
+        task4_result = select_points(select_user_id(message.chat.id), "points_4")
+        task5_result = select_points(select_user_id(message.chat.id), "points_5")
+        itog = task1_result+task2_result+task3_result+task4_result+task5_result
+        if(itog>=6):
+            bot.send_message(message.chat.id,f"Ты набрал {itog} баллов из 10, поздравляем, ты зачислен")
+        elif (itog == 5):
+            bot.send_message(message.chat.id,f"Ты набрал {itog} баллов из 10, к сожалению, ты не зачислен")
+        elif(itog == 0):
+            bot.send_message(message.chat.id, f"Ты набрал {itog} баллов из 10, к сожалению, ты не зачислен")
+        else:
+            bot.send_message(message.chat.id, f"Ты набрал {itog} балла из 10, к сожалению, ты не зачислен")
 
 
 def zadanie1_acceptage(message):
