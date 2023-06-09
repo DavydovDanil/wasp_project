@@ -588,38 +588,148 @@ def menu_testa(message):
     sqlite_connection.commit()
     cursor.close()
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
-    zadanie_1 = types.KeyboardButton('Задание 1')
-    zadanie_2 = types.KeyboardButton('Задание 2')
-    zadanie_3 = types.KeyboardButton('Задание 3')
-    zadanie_4 = types.KeyboardButton('Задание 4')
-    zadanie_5 = types.KeyboardButton('Задание 5')
-    markup.add(zadanie_1, zadanie_2, zadanie_3, zadanie_4, zadanie_5)
+    zadanie_1 = types.KeyboardButton('Приступить к выполнению задания')
+    markup.add(zadanie_1)
     msg = bot.send_message(message.chat.id, 'Тест состоит из 5 заданий, выбери задание и решай его. Если не знаешь, как решить задание, можешь перейти к другому', reply_markup=markup)
     bot.register_next_step_handler(msg, raspredelenie)
 
 
 def raspredelenie(message):
-    if(message.text == 'Задание 1'):
+    if(message.text == 'Задание 1' or message.text == 'Приступить к выполнению задания'):
         markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
+        back = types.KeyboardButton('Назад')
+        markup.add(back)
         zadanie = select_sozdanniy_varik1(select_user_id(message.chat.id))
         instruction = select_instruction_task(zadanie)
-        bot.send_message(message.chat.id, instruction)
+        msg = bot.send_message(message.chat.id, instruction, reply_markup=markup)
+        bot.register_next_step_handler(msg, zadanie1_acceptage)
     elif(message.text == 'Задание 2'):
+        markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
+        back = types.KeyboardButton('Назад')
+        markup.add(back)
         zadanie = select_sozdanniy_varik2(select_user_id(message.chat.id))
         instruction = select_instruction_task(zadanie)
-        bot.send_message(message.chat.id, instruction)
+        msg = bot.send_message(message.chat.id, instruction, reply_markup=markup)
+        bot.register_next_step_handler(msg, zadanie2_acceptage)
     elif (message.text == 'Задание 3'):
+        markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
+        back = types.KeyboardButton('Назад')
+        markup.add(back)
         zadanie = select_sozdanniy_varik3(select_user_id(message.chat.id))
         instruction = select_instruction_task(zadanie)
-        bot.send_message(message.chat.id, instruction)
+        msg = bot.send_message(message.chat.id, instruction, reply_markup=markup)
+        bot.register_next_step_handler(msg, zadanie3_acceptage)
     elif (message.text == 'Задание 4'):
+        markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
+        back = types.KeyboardButton('Назад')
+        markup.add(back)
         zadanie = select_sozdanniy_varik4(select_user_id(message.chat.id))
         instruction = select_instruction_task(zadanie)
-        bot.send_message(message.chat.id, instruction)
+        msg = bot.send_message(message.chat.id, instruction, reply_markup=markup)
+        bot.register_next_step_handler(msg, zadanie4_acceptage)
     elif (message.text == 'Задание 5'):
-        zadanie = select_sozdanniy_varik5(select_user_id(message.chat.id))
+        markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
+        back = types.KeyboardButton('Назад')
+        markup.add(back)
+        zadanie = select_sozdanniy_varik2(select_user_id(message.chat.id))
         instruction = select_instruction_task(zadanie)
-        bot.send_message(message.chat.id, instruction)
+        msg = bot.send_message(message.chat.id, instruction, reply_markup=markup)
+        bot.register_next_step_handler(msg, zadanie5_acceptage)
+    elif(message.text == 'Я готов сдать (перед тем, как сдать, проверь, все ли задания ты решил)'):
+        msg = bot.send_message(message.chat.id, "Ты написал тест, жди результатов")
+
+
+def zadanie1_acceptage(message):
+    if(message.text == 'Назад'):
+        menu_testa_after_zapolnenie(message)
+    else:
+        user_id = select_user_id(message.chat.id)
+        sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
+        sqlite_update_query = """UPDATE tasks
+            SET user_answer_1 = \'""" + str(message.text) + """\'
+            WHERE user_id = \'""" + str(user_id) + """\'"""
+        cursor = sqlite_connection.cursor()
+        cursor.execute(sqlite_update_query)
+        sqlite_connection.commit()
+        cursor.close()
+        menu_testa_after_zapolnenie(message)
+
+
+def zadanie2_acceptage(message):
+    if(message.text == 'Назад'):
+        menu_testa_after_zapolnenie(message)
+    else:
+        user_id = select_user_id(message.chat.id)
+        sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
+        sqlite_update_query = """UPDATE tasks
+            SET user_answer_2 = \'""" + str(message.text) + """\'
+            WHERE user_id = \'""" + str(user_id) + """\'"""
+        cursor = sqlite_connection.cursor()
+        cursor.execute(sqlite_update_query)
+        sqlite_connection.commit()
+        cursor.close()
+        menu_testa_after_zapolnenie(message)
+
+
+def zadanie3_acceptage(message):
+    if(message.text == 'Назад'):
+        menu_testa_after_zapolnenie(message)
+    else:
+        user_id = select_user_id(message.chat.id)
+        sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
+        sqlite_update_query = """UPDATE tasks
+            SET user_answer_3 = \'""" + str(message.text) + """\'
+            WHERE user_id = \'""" + str(user_id) + """\'"""
+        cursor = sqlite_connection.cursor()
+        cursor.execute(sqlite_update_query)
+        sqlite_connection.commit()
+        cursor.close()
+        menu_testa_after_zapolnenie(message)
+
+
+def zadanie4_acceptage(message):
+    if(message.text == 'Назад'):
+        menu_testa_after_zapolnenie(message)
+    else:
+        user_id = select_user_id(message.chat.id)
+        sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
+        sqlite_update_query = """UPDATE tasks
+            SET user_answer_4 = \'""" + str(message.text) + """\'
+            WHERE user_id = \'""" + str(user_id) + """\'"""
+        cursor = sqlite_connection.cursor()
+        cursor.execute(sqlite_update_query)
+        sqlite_connection.commit()
+        cursor.close()
+        menu_testa_after_zapolnenie(message)
+
+
+def zadanie5_acceptage(message):
+    if(message.text == 'Назад'):
+        menu_testa_after_zapolnenie(message)
+    else:
+        user_id = select_user_id(message.chat.id)
+        sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
+        sqlite_update_query = """UPDATE tasks
+            SET user_answer_5 = \'""" + str(message.text) + """\'
+            WHERE user_id = \'""" + str(user_id) + """\'"""
+        cursor = sqlite_connection.cursor()
+        cursor.execute(sqlite_update_query)
+        sqlite_connection.commit()
+        cursor.close()
+        menu_testa_after_zapolnenie(message)
+
+
+def menu_testa_after_zapolnenie(message):
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
+    zadanie_1 = types.KeyboardButton('Задание 1')
+    zadanie_2 = types.KeyboardButton('Задание 2')
+    zadanie_3 = types.KeyboardButton('Задание 3')
+    zadanie_4 = types.KeyboardButton('Задание 4')
+    zadanie_5 = types.KeyboardButton('Задание 5')
+    ya_gotov = types.KeyboardButton('Я готов сдать (перед тем, как сдать, проверь, все ли задания ты решил)')
+    markup.add(zadanie_1, zadanie_2, zadanie_3, zadanie_4, zadanie_5, ya_gotov)
+    msg = bot.send_message(message.chat.id, 'Ты в меню', reply_markup=markup)
+    bot.register_next_step_handler(msg, raspredelenie)
 
 
 @bot.message_handler(content_types=["text"])
