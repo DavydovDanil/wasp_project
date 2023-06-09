@@ -4,9 +4,11 @@ from telebot import types
 import random
 from random import random, randrange, randint
 import sys
+
+
 #    update_student(surname1, "surname", message.chat.id)
-  #  update_student(name1, "name", message.chat.id)
-   # update_student(patronymic1, "patronymic", message.chat.id)
+#  update_student(name1, "name", message.chat.id)
+# update_student(patronymic1, "patronymic", message.chat.id)
 
 def databasecreation_student():
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
@@ -71,7 +73,6 @@ def databasecreation_student():
                                                     type_id INTEGER,
                                                     answer INTEGER);''')
 
-
     sqlite_connection.commit()
     cursor.close()
 
@@ -85,6 +86,7 @@ def update_student(value, table, idvchate):
     cursor.execute(sqlite_update_query)
     sqlite_connection.commit()
     cursor.close()
+
 
 def insert_test():
     type_1_task_1 = "1.	Определите, в какой минимальной системе счисления может быть записано число 2537." \
@@ -101,9 +103,9 @@ def insert_test():
                     " Было проведено 10 запусков программы, при которых в качестве значений переменных s и t вводились следующие пары чисел:" \
                     " \n(1, 2); (5, 4); (-10, 6); (9, 2); (1, -6); (11, 12); (-11, 12); (-10; 10); (12; -1); (-12; 1)." \
                     "\nСколько было запусков, при которых программа напечатала слово «YES»?"
-    #bot.send_photo(message.chat.id, get("https://i0.wampi.ru/2019/11/12/image.png").content)
+    # bot.send_photo(message.chat.id, get("https://i0.wampi.ru/2019/11/12/image.png").content)
     type_1_task_2 = "1.	Определите, в какой минимальной системе счисления может быть записано число 7531." \
-                   " Переведите число из этой системы счисления в десятичную."
+                    " Переведите число из этой системы счисления в десятичную."
     type_2_task_2 = "2.	Напишите наименьшее целое число x, для которого истинно следующее высказывание:" \
                     "\nНЕ ((X < 5) И (X > 8)) ИЛИ (X > 2)"
     type_3_task_2 = "3.	Сотрудник компании работал с файлом E:\Sheets\Departments\Cloud\Salary.xlsx. " \
@@ -157,7 +159,7 @@ def insert_test():
     cursor1 = sqlite_connection.cursor()
     cursor1.execute(sqlite_check_query)
     a = cursor1.fetchone()[0]
-    if(a==0):
+    if (a == 0):
         sqlite_insert_query1 = """INSERT INTO task_info(taskitself,type_id, answer)
                 VALUES(\'""" + str(type_1_task_1) + """\', 1, "1375"),(\'""" + str(
             type_1_task_2) + """\', 1, "3929"),(\'""" + str(type_1_task_3) + """\', 1,"1957"),
@@ -185,15 +187,15 @@ def select_random_test_task(task_type):
         WHERE type_id = {task_type};""")
     rows = cursor.fetchall()
     A = [elt[0] for elt in rows]
-    if(task_type == 1):
+    if (task_type == 1):
         random_task = randint(1, 4)
     elif (task_type == 2):
         random_task = randint(5, 8)
-    elif(task_type == 3):
+    elif (task_type == 3):
         random_task = randint(9, 12)
-    elif(task_type == 4):
+    elif (task_type == 4):
         random_task = randint(13, 16)
-    elif(task_type == 5):
+    elif (task_type == 5):
         random_task = randint(17, 20)
     sqlite_connection.commit()
     cursor.close()
@@ -210,6 +212,7 @@ def select_answer(task_id):
     sqlite_connection.commit()
     cursor.close()
     return A[0]
+
 
 def select_answer_by_id(answer, user_id):
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
@@ -317,6 +320,7 @@ def insert_points(points_tasknumber, value, user_id):
     sqlite_connection.commit()
     cursor.close()
 
+
 bot = telebot.TeleBot('6047835028:AAHha2Rn-1_THc9tEpSwvRaVn4N65qDZohI')
 
 
@@ -378,14 +382,14 @@ def user_answer(message):
 
 
 def ImOrganiser(message):
-
     if message.text == '123':
-        bot.send_message(message.chat.id,'Добро пожаловать, Anthony')
+        bot.send_message(message.chat.id, 'Добро пожаловать, Anthony')
         OrganizerMenu1(message)
     else:
         bot.send_message(message.chat.id, 'Неверный пароль')
         start(message)
 
+
 def OrganizerMenu1(message):
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
     tasks = types.KeyboardButton('Работа с банком заданий')
@@ -393,10 +397,12 @@ def OrganizerMenu1(message):
     calendar_changes = types.KeyboardButton('Внести временные\nслоты в календарь')
     info_about_student = types.KeyboardButton('Узнать информацию об ученике')
     other_buttons = types.KeyboardButton('Другие запросы (2 часть)')
-    markup.add(tasks,tasks_quota,calendar_changes,info_about_student,other_buttons)
+    markup.add(tasks, tasks_quota, calendar_changes, info_about_student, other_buttons)
     msg = bot.send_message(message.chat.id, 'Выберите категорию запроса',
                            reply_markup=markup)
-    bot.register_next_step_handler(msg,OrganizerIf)
+    bot.register_next_step_handler(msg, OrganizerIf)
+
+
 def OrganizerMenu1(message):
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
     tasks = types.KeyboardButton('Работа с банком заданий')
@@ -404,10 +410,10 @@ def OrganizerMenu1(message):
     calendar_changes = types.KeyboardButton('Внести временные\nслоты в календарь')
     info_about_student = types.KeyboardButton('Узнать информацию об ученике')
     other_buttons = types.KeyboardButton('Другие запросы (2 часть)')
-    markup.add(tasks,tasks_quota,calendar_changes,info_about_student,other_buttons)
+    markup.add(tasks, tasks_quota, calendar_changes, info_about_student, other_buttons)
     msg = bot.send_message(message.chat.id, 'Выберите категорию запроса',
                            reply_markup=markup)
-    bot.register_next_step_handler(msg,OrganizerIf)
+    bot.register_next_step_handler(msg, OrganizerIf)
 
 
 def OrganizerMenu2(message):
@@ -417,10 +423,10 @@ def OrganizerMenu2(message):
     group_message = types.KeyboardButton('Оповестить всех')
     next_etap = types.KeyboardButton('Отправить приглашение на следующий этап')
     other_buttons = types.KeyboardButton('Другие запросы (3 часть)')
-    markup.add(status,etap_dates,group_message,next_etap,other_buttons)
+    markup.add(status, etap_dates, group_message, next_etap, other_buttons)
     msg = bot.send_message(message.chat.id, 'Выберите категорию запроса',
                            reply_markup=markup)
-    bot.register_next_step_handler(msg,OrganizerIf)
+    bot.register_next_step_handler(msg, OrganizerIf)
 
 
 def OrganizerMenu3(message):
@@ -428,10 +434,12 @@ def OrganizerMenu3(message):
     ochiy_etap_results = types.KeyboardButton('Выбрать статус кандидата')
     spisok_zayavok = types.KeyboardButton('Просмотреть список заявок')
     other_buttons = types.KeyboardButton('Другие запросы (1 часть)')
-    markup.add(ochiy_etap_results,spisok_zayavok,other_buttons)
+    markup.add(ochiy_etap_results, spisok_zayavok, other_buttons)
     msg = bot.send_message(message.chat.id, 'Выберите категорию запроса',
                            reply_markup=markup)
-    bot.register_next_step_handler(msg,OrganizerIf)
+    bot.register_next_step_handler(msg, OrganizerIf)
+
+
 def OrganizerIf(message):
     if (message.text == 'Другие запросы (2 часть)'):
         OrganizerMenu2(message)
@@ -443,19 +451,19 @@ def OrganizerIf(message):
 
 def ImStudent1(message):
     remove = types.ReplyKeyboardRemove()
-    if(message.text == 'Готов(a) регистрироваться!'):
+    if (message.text == 'Готов(a) регистрироваться!'):
         msg = bot.send_message(message.chat.id,
                                'Вы были перенесены на этап регистрации. Введите имя (Пример: Антон)')
         bot.register_next_step_handler(msg, ImStudent2)
     else:
         user_answer(message)
 
+
 def ImStudent2(message):
     remove = types.ReplyKeyboardRemove()
     msg = bot.send_message(message.chat.id,
                            'Введите фамилию (Пример: Кисляков)')
-    update_student(message.text,"name",message.chat.id)
-
+    update_student(message.text, "name", message.chat.id)
 
     bot.register_next_step_handler(msg, ImStudent3)
 
@@ -574,6 +582,7 @@ def proverka_phone(message):
     bot.register_next_step_handler(msg, proverka_proverki_phone)
     update_student(message.text, "phone_number", message.chat.id)
 
+
 def proverka_proverki_phone(message):
     remove = types.ReplyKeyboardRemove()
     if message.text == 'Нет':
@@ -623,8 +632,10 @@ def proverka_proverki_pochtu(message):
 
 def vvedite_school(message):
     remove = types.ReplyKeyboardRemove()
-    msg = bot.send_message(message.chat.id, 'Введите название вашего учебного заведения \n(Например "ГБОУ Школа №1488" или НИУ ВШЭ)')
+    msg = bot.send_message(message.chat.id,
+                           'Введите название вашего учебного заведения \n(Например "ГБОУ Школа №1488" или НИУ ВШЭ)')
     bot.register_next_step_handler(msg, proverka_school)
+
 
 def proverka_school(message):
     remove = types.ReplyKeyboardRemove()
@@ -678,6 +689,7 @@ def proverka_gotovnosti_k_testu(message):
         msg = bot.send_message(message.chat.id, "Выбери команду из меню")
         Vvedenie_K_Testu(msg)
 
+
 def menu_testa(message):
     remove = types.ReplyKeyboardRemove()
     zadanie1 = select_random_test_task(1)
@@ -699,13 +711,15 @@ def menu_testa(message):
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
     zadanie_1 = types.KeyboardButton('Приступить к выполнению задания')
     markup.add(zadanie_1)
-    msg = bot.send_message(message.chat.id, 'Тест состоит из 5 заданий, выбери задание и решай его. Если не знаешь, как решить задание, можешь перейти к другому', reply_markup=markup)
+    msg = bot.send_message(message.chat.id,
+                           'Тест состоит из 5 заданий, выбери задание и решай его. Если не знаешь, как решить задание, можешь перейти к другому',
+                           reply_markup=markup)
     bot.register_next_step_handler(msg, raspredelenie)
 
 
 def raspredelenie(message):
     remove = types.ReplyKeyboardRemove()
-    if(message.text == 'Задание 1' or message.text == 'Приступить к выполнению задания'):
+    if (message.text == 'Задание 1' or message.text == 'Приступить к выполнению задания'):
         markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
         back = types.KeyboardButton('Назад')
         markup.add(back)
@@ -713,7 +727,7 @@ def raspredelenie(message):
         instruction = select_instruction_task(zadanie)
         msg = bot.send_message(message.chat.id, instruction, reply_markup=markup)
         bot.register_next_step_handler(msg, zadanie1_acceptage)
-    elif(message.text == 'Задание 2'):
+    elif (message.text == 'Задание 2'):
         markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
         back = types.KeyboardButton('Назад')
         markup.add(back)
@@ -745,31 +759,42 @@ def raspredelenie(message):
         instruction = select_instruction_task(zadanie)
         msg = bot.send_message(message.chat.id, instruction, reply_markup=markup)
         bot.register_next_step_handler(msg, zadanie5_acceptage)
-    elif(message.text == 'Я готов сдать (перед тем, как сдать, проверь, все ли задания ты решил)'):
-        if(select_answer_by_id("user_answer_1", select_user_id(message.chat.id)) == select_answer_by_id("answer_1", select_user_id(message.chat.id))):
+    elif (message.text == 'Я готов сдать (перед тем, как сдать, проверь, все ли задания ты решил)'):
+        if (select_answer_by_id("user_answer_1", select_user_id(message.chat.id)) == select_answer_by_id("answer_1",
+                                                                                                         select_user_id(
+                                                                                                                 message.chat.id))):
             insert_points("points_1", 2, select_user_id(message.chat.id))
         else:
             insert_points("points_1", 0, select_user_id(message.chat.id))
-        if (select_answer_by_id("user_answer_2", select_user_id(message.chat.id)) == select_answer_by_id("answer_2", select_user_id(message.chat.id))):
+        if (select_answer_by_id("user_answer_2", select_user_id(message.chat.id)) == select_answer_by_id("answer_2",
+                                                                                                         select_user_id(
+                                                                                                                 message.chat.id))):
             insert_points("points_2", 2, select_user_id(message.chat.id))
         else:
             insert_points("points_2", 0, select_user_id(message.chat.id))
-        if (select_answer_by_id("user_answer_3", select_user_id(message.chat.id)) == select_answer_by_id("answer_3", select_user_id(message.chat.id))):
+        if (select_answer_by_id("user_answer_3", select_user_id(message.chat.id)) == select_answer_by_id("answer_3",
+                                                                                                         select_user_id(
+                                                                                                                 message.chat.id))):
             insert_points("points_3", 2, select_user_id(message.chat.id))
         else:
             insert_points("points_3", 0, select_user_id(message.chat.id))
-        if (select_answer_by_id("user_answer_4", select_user_id(message.chat.id)) == select_answer_by_id("answer_4", select_user_id(message.chat.id))):
+        if (select_answer_by_id("user_answer_4", select_user_id(message.chat.id)) == select_answer_by_id("answer_4",
+                                                                                                         select_user_id(
+                                                                                                                 message.chat.id))):
             insert_points("points_4", 2, select_user_id(message.chat.id))
         else:
             insert_points("points_4", 0, select_user_id(message.chat.id))
-        if (select_answer_by_id("user_answer_5", select_user_id(message.chat.id)) == select_answer_by_id("answer_5", select_user_id(message.chat.id))):
+        if (select_answer_by_id("user_answer_5", select_user_id(message.chat.id)) == select_answer_by_id("answer_5",
+                                                                                                         select_user_id(
+                                                                                                                 message.chat.id))):
             insert_points("points_5", 2, select_user_id(message.chat.id))
         else:
             insert_points("points_5", 0, select_user_id(message.chat.id))
 
+
 def zadanie1_acceptage(message):
     remove = types.ReplyKeyboardRemove()
-    if(message.text == 'Назад'):
+    if (message.text == 'Назад'):
         menu_testa_after_zapolnenie(message)
     else:
         user_id = select_user_id(message.chat.id)
@@ -786,7 +811,7 @@ def zadanie1_acceptage(message):
 
 def zadanie2_acceptage(message):
     remove = types.ReplyKeyboardRemove()
-    if(message.text == 'Назад'):
+    if (message.text == 'Назад'):
         menu_testa_after_zapolnenie(message)
     else:
         user_id = select_user_id(message.chat.id)
@@ -803,7 +828,7 @@ def zadanie2_acceptage(message):
 
 def zadanie3_acceptage(message):
     remove = types.ReplyKeyboardRemove()
-    if(message.text == 'Назад'):
+    if (message.text == 'Назад'):
         menu_testa_after_zapolnenie(message)
     else:
         user_id = select_user_id(message.chat.id)
@@ -820,7 +845,7 @@ def zadanie3_acceptage(message):
 
 def zadanie4_acceptage(message):
     remove = types.ReplyKeyboardRemove()
-    if(message.text == 'Назад'):
+    if (message.text == 'Назад'):
         menu_testa_after_zapolnenie(message)
     else:
         user_id = select_user_id(message.chat.id)
@@ -837,7 +862,7 @@ def zadanie4_acceptage(message):
 
 def zadanie5_acceptage(message):
     remove = types.ReplyKeyboardRemove()
-    if(message.text == 'Назад'):
+    if (message.text == 'Назад'):
         menu_testa_after_zapolnenie(message)
     else:
         user_id = select_user_id(message.chat.id)
@@ -878,7 +903,6 @@ def step_back(message):
 @bot.message_handler(func=lambda message: message.text == 'Назад', content_types=['text'])
 def step2_back_handler(message):
     start(message)
-
 
 
 bot.polling(none_stop=True)
