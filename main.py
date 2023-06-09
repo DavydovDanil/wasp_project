@@ -214,7 +214,7 @@ def select_answer(task_id):
 def select_answer_by_id(answer, user_id):
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
     cursor = sqlite_connection.cursor()
-    cursor.execute(f"""SELECT {answer} FROM tasks
+    cursor.execute("""SELECT """ + answer + f"""FROM tasks
                 WHERE user_id = {user_id};""")
     rows = cursor.fetchall()
     A = [elt[0] for elt in rows]
@@ -597,7 +597,6 @@ def menu_testa(message):
     zadanie5 = select_random_test_task(5)
     answer1 = select_answer(zadanie1)
     answer2 = select_answer(zadanie2)
-    otvet3 = select_answer(zadanie3)
     answer4 = select_answer(zadanie4)
     answer5 = select_answer(zadanie5)
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
