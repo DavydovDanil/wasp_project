@@ -405,11 +405,21 @@ def ImOrganiser(message):
 def vnesti_date(value_date):
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
     cursor = sqlite_connection.cursor()
-    a = """INSERT INTO calendar_interview(date_interview)
-                VALUES(\'""" + str(value_date) + """\')"""
+    cursor.execute("""INSERT INTO calendar_interview(date_interview)
+                VALUES(\'""" + str(value_date) + """\')""")
+    sqlite_connection.commit()
+    cursor.close()
+
+
+def vnesti_time(value_time,value_date):
+    sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
+    cursor = sqlite_connection.cursor()
+    a = """UPDATE calendar_interview SET time_interview = \'""" + str(value_time) + """\'
+    WHERE date_interview = \'""" + str(value_date) + """\'"""
     cursor.execute(a)
     sqlite_connection.commit()
     cursor.close()
+
 
 
 def OrganizerMenu1(message):
@@ -443,19 +453,36 @@ def OrganizerIf(message):
     elif (message.text == 'Другие запросы (1 часть)'):
         OrganizerMenu2(message)
     elif (message.text == 'Внести временные слоты в календарь'):
-        msg = bot.send_message(message.chat.id, "Напишите дату, когда можете провести собеседование")
-        bot.register_next_step_handler(msg,vnesti_sloty_date)
+        bot.send_message(message.chat.id, "Выберите категорию запроса")
+        sloty_if(message)
 
+
+
+def sloty_if(message):
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
+    data_answer = types.KeyboardButton('Хочу добавить дату')
+    time_answer = types.KeyboardButton('Хочу добавить время')
+    markup.add(data_answer,time_answer)
+    msg = bot.send_message(message.chat.id,"Вы хотите добавить день или время",reply_markup=markup)
+    bot.register_next_step_handler(msg,vnesti_sloty_if)
+def vnesti_sloty_if(message):
+    if message.text == 'Хочу добавить дату':
+       msg = bot.send_message(message.chat.id, "Введите день")
+       bot.register_next_step_handler(msg,vnesti_sloty_date)
+    elif message.text == 'Хочу добавить время':
+        msg = bot.send_message(message.chat.id,"В какой день вы хотите добавить время?")
+        bot.register_next_step_handler(msg, vnesti_sloty_time)
 
 def vnesti_sloty_date(message):
     vnesti_date(message.text)
-    msg = bot.send_message(message.chat.id, "День добавлен, теперь введите время")
-    bot.register_next_step_handler(msg,vnesti_sloty_time)
-
-
+    msg = bot.send_message(message.chat.id, "День успешно добавлен!")
+    bot.register_next_step_handler(msg, OrganizerMenu1)
 def vnesti_sloty_time(message):
-    msg = bot.send_message(message.chat.id, "Введите время, когда сможете провести собеседование")
-    bot.register_next_step_handler(msg, OrganizerIf)
+    value_time = message.text
+    bot.send_message(message.chat.id,"Теперь напишите время, которое хотите добавить")
+    vnesti_time(message.text,value_time)
+    msg = bot.send_message(message.chat.id, "Время успешно добавлено!")
+    bot.register_next_step_handler(msg, OrganizerMenu1)
 
 
 def ImStudent1(message):
