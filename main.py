@@ -447,10 +447,10 @@ def OrganizerMenu1(message):
     tasks_quota = types.KeyboardButton('Выбрать квоту зачисленных')
     calendar_changes = types.KeyboardButton('Внести временные слоты в календарь')
     info_about_student = types.KeyboardButton('Узнать информацию об ученике')
+    results = types.KeyboardButton('Внести результаты по очному этапу')
     other_buttons = types.KeyboardButton('Другие запросы (2 часть)')
-    markup.add(tasks_quota, calendar_changes, info_about_student, other_buttons)
-    msg = bot.send_message(message.chat.id, 'Выберите категорию запроса',
-                           reply_markup=markup)
+    markup.add(tasks_quota, calendar_changes, info_about_student,results, other_buttons)
+    msg = bot.send_message(message.chat.id, 'Выберите категорию запроса', reply_markup=markup)
     bot.register_next_step_handler(msg, OrganizerIf)
 
 
@@ -460,7 +460,7 @@ def OrganizerMenu2(message):
     etap_dates = types.KeyboardButton('Изменить даты этапов')
     group_message = types.KeyboardButton('Оповестить всех')
     next_etap = types.KeyboardButton('Отправить приглашение на следующий этап')
-    other_buttons = types.KeyboardButton('Другие запросы (3 часть)')
+    other_buttons = types.KeyboardButton('Другие запросы (1 часть)')
     markup.add(status, etap_dates, group_message, next_etap, other_buttons)
     msg = bot.send_message(message.chat.id, 'Выберите категорию запроса',
                            reply_markup=markup)
@@ -469,25 +469,39 @@ def OrganizerMenu2(message):
 
 def OrganizerIf(message):
     if (message.text == 'Другие запросы (2 часть)'):
-        OrganizerMenu1(message)
-    elif (message.text == 'Другие запросы (1 часть)'):
         OrganizerMenu2(message)
+    elif (message.text == 'Другие запросы (1 часть)'):
+        OrganizerMenu1(message)
     elif (message.text == 'Внести временные слоты в календарь'):
         sloty_if(message)
-    elif (message.text == 'Внести результаты по очному этапу'):
+    elif (message.text == 'Выбрать статус кандидата'):
         msg = bot.send_message(message.chat.id, "Введите ID ученика")
-        bot.register_next_step_handler(msg, OchniyEtapResults)
+        bot.register_next_step_handler(msg, Status)
     elif (message.text == 'Узнать информацию об ученике'):
         msg = bot.send_message(message.chat.id, "Введите ID ученика")
         bot.register_next_step_handler(msg, SelectStudentInfo)
+    elif (message.text == 'Внести результаты по очному этапу'):
+        msg = bot.send_message(message.chat.id, "Введите ID ученика")
+        bot.register_next_step_handler(msg, OchniyEtapRes)
+
+
+def OchniyEtapRes(message):
+    global res
+    res = message.text
+    msg = bot.send_message(message.chat.id, "Введите результат кандидата за очное тестирование")
+    bot.register_next_step_handler(msg, OchniyEtapResIf)
+
+def OchniyEtapResIf(message):
+    update_student(message.text, "second_stage_result", res)
+    bot.send_message(message.chat.id, "Результат сохранён")
+    OrganizerMenu1(message)
 
 def SelectStudentInfo(message):
     studentid = message.text
     selectstudent(message, studentid)
 
 
-global user_id
-def OchniyEtapResults(message):
+def Status(message):
     global a
     a = message.text
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
@@ -495,12 +509,13 @@ def OchniyEtapResults(message):
     notcool = types.KeyboardButton('Не зачислен')
     inprocess = types.KeyboardButton('В ожидании')
     markup.add(cool, notcool, inprocess)
-    msg = bot.send_message(message.chat.id,"Выберите результат тестирования",reply_markup=markup)
-    bot.register_next_step_handler(msg, OcniyEtapResultsIf)
+    msg = bot.send_message(message.chat.id,"Выберите статус кандидата",reply_markup=markup)
+    bot.register_next_step_handler(msg, StatusIf)
 
 
-def OcniyEtapResultsIf(message):
+def StatusIf(message):
     update_student(message.text, "status", a)
+    OrganizerMenu1(message)
 
 
 def sloty_if(message):
@@ -512,6 +527,8 @@ def sloty_if(message):
     markup.add(data_answer,data2_answer,data3_answer,data4_answer)
     msg = bot.send_message(message.chat.id,"Выберите категорию запроса",reply_markup=markup)
     bot.register_next_step_handler(msg,vnesti_sloty_if)
+
+
 def vnesti_sloty_if(message):
     if message.text == 'Добавить дату и время':
        msg = bot.send_message(message.chat.id, "Введите день, который хотите добавить")
@@ -534,6 +551,7 @@ def delete_sloty_date(date_id):
     cursor.execute(sqlite_select_query)
     sqlite_connection.commit()
     cursor.close()
+
 
 def delete_sloty_date_full(date_id):
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
