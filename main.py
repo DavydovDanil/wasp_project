@@ -87,7 +87,6 @@ def selectstudent(studentid):
     sqlite_connection.commit()
     cursor.close()
     return A[0]
-    return A[0]
 def update_student(value, table, idvchate):
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
     sqlite_update_query = """UPDATE student_info
@@ -479,7 +478,7 @@ def OrganizerIf(message):
         msg = bot.send_message(message.chat.id, "Введите ID ученика")
         bot.register_next_step_handler(msg, OchniyEtapResults)
     elif (message.text == 'Узнать информацию об ученике'):
-        msg = bot.send_message(message.chat.id, "Введите имя ученика")
+        msg = bot.send_message(message.chat.id, "Введите ID ученика")
         bot.register_next_step_handler(msg, SelectStudentInfo)
 
 def SelectStudentInfo(message):
@@ -487,7 +486,10 @@ def SelectStudentInfo(message):
     selectstudent(message, studentid)
 
 
+global user_id
 def OchniyEtapResults(message):
+    global a
+    a = message.text
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
     cool = types.KeyboardButton('Зачислен')
     notcool = types.KeyboardButton('Не зачислен')
@@ -498,8 +500,7 @@ def OchniyEtapResults(message):
 
 
 def OcniyEtapResultsIf(message):
-    if message.text == 'Зaчислен':
-        update_student('Зачислен',"status",OrganizerIf(message.chat.id))
+    update_student(message.text, "status", a)
 
 
 def sloty_if(message):
