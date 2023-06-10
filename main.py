@@ -402,26 +402,23 @@ def ImOrganiser(message):
         start(message)
 
 
+def vnesti_date(value_date):
+    sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
+    cursor = sqlite_connection.cursor()
+    a = """INSERT INTO calendar_interview(date_interview)
+                VALUES(\'""" + str(value_date) + """\')"""
+    cursor.execute(a)
+    sqlite_connection.commit()
+    cursor.close()
+
+
 def OrganizerMenu1(message):
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
     tasks_quota = types.KeyboardButton('Выбрать квоту зачисленных')
-    calendar_changes = types.KeyboardButton('Внести временные\nслоты в календарь')
+    calendar_changes = types.KeyboardButton('Внести временные слоты в календарь')
     info_about_student = types.KeyboardButton('Узнать информацию об ученике')
     other_buttons = types.KeyboardButton('Другие запросы (2 часть)')
     markup.add(tasks_quota, calendar_changes, info_about_student, other_buttons)
-    msg = bot.send_message(message.chat.id, 'Выберите категорию запроса',
-                           reply_markup=markup)
-    bot.register_next_step_handler(msg, OrganizerIf)
-
-
-def OrganizerMenu1(message):
-    markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
-    status = types.KeyboardButton('Выбрать статус кандидата')
-    group_message = types.KeyboardButton('Оповестить всех')
-    next_etap = types.KeyboardButton('Отправить приглашение на следующий этап')
-    other_buttons = types.KeyboardButton('Другие запросы (1 часть)')
-    ochniy_etap_results = types.KeyboardButton('Внести результаты по очному этапу')
-    markup.add(status,group_message,next_etap, other_buttons,ochniy_etap_results)
     msg = bot.send_message(message.chat.id, 'Выберите категорию запроса',
                            reply_markup=markup)
     bot.register_next_step_handler(msg, OrganizerIf)
@@ -440,12 +437,25 @@ def OrganizerMenu2(message):
     bot.register_next_step_handler(msg, OrganizerIf)
 
 
-
 def OrganizerIf(message):
     if (message.text == 'Другие запросы (2 часть)'):
         OrganizerMenu1(message)
     elif (message.text == 'Другие запросы (1 часть)'):
         OrganizerMenu2(message)
+    elif (message.text == 'Внести временные слоты в календарь'):
+        msg = bot.send_message(message.chat.id, "Напишите дату, когда можете провести собеседование")
+        bot.register_next_step_handler(msg,vnesti_sloty_date)
+
+
+def vnesti_sloty_date(message):
+    vnesti_date(message.text)
+    msg = bot.send_message(message.chat.id, "День добавлен, теперь введите время")
+    bot.register_next_step_handler(msg,vnesti_sloty_time)
+
+
+def vnesti_sloty_time(message):
+    msg = bot.send_message(message.chat.id, "Введите время, когда сможете провести собеседование")
+    bot.register_next_step_handler(msg, OrganizerIf)
 
 
 def ImStudent1(message):
