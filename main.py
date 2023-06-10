@@ -57,13 +57,14 @@ def databasecreation_student():
                                         password TEXT NOT NULL);''')
 
     cursor.execute('''CREATE TABLE IF NOT EXISTS calendar_interview(
-                                            date_interview TEXT PRIMARY KEY,
+                                            id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                            date_interview TEXT ,
                                             time_interview TEXT,
                                             student_info_id INTEGER UNIQUE
                                             );''')
 
     cursor.execute('''CREATE TABLE IF NOT EXISTS calendar_ochniy_etap(
-                                                date_interview TEXT PRIMARY KEY,
+                                                date_interview TEXT,
                                                 time_interview TEXT,
                                                 student_info_id INTEGER);''')
 
@@ -76,7 +77,17 @@ def databasecreation_student():
     sqlite_connection.commit()
     cursor.close()
 
-
+def selectstudent(studentid):
+    sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
+    cursor = sqlite_connection.cursor()
+    cursor.execute(f"""SELECT * FROM student_info
+                WHERE id = {studentid};""")
+    row = cursor.fetchall()
+    A = [elt[0] for elt in row]
+    sqlite_connection.commit()
+    cursor.close()
+    return A[0]
+    return A[0]
 def update_student(value, table, idvchate):
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
     sqlite_update_query = """UPDATE student_info
@@ -369,7 +380,7 @@ def user_answer(message):
                student_info WHERE id_v_chate LIKE \'""" + str(message.chat.id) + """\'"""
         cursor.execute(sqlite_select_query)
         a = cursor.fetchone()[0]
-        bot.send_message(message.chat.id, a)
+        #bot.send_message(message.chat.id, a)
         if (a == 1 or a == 0):
             markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
             back = types.KeyboardButton('Назад')
@@ -411,16 +422,26 @@ def vnesti_date(value_date):
     cursor.close()
 
 
-def vnesti_time(value_time,value_date):
+def vnesti_time(value_time,id):
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
     cursor = sqlite_connection.cursor()
     a = """UPDATE calendar_interview SET time_interview = \'""" + str(value_time) + """\'
-    WHERE date_interview = \'""" + str(value_date) + """\'"""
+    WHERE id = \'""" + str(id) + """\'"""
     cursor.execute(a)
     sqlite_connection.commit()
     cursor.close()
 
 
+def CountDates():
+    sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
+    cursor = sqlite_connection.cursor()
+    sqlite_select_query = """SELECT COUNT(*) as num FROM calendar_interview """
+    cursor.execute(sqlite_select_query)
+    a = cursor.fetchone()[0]
+    sqlite_connection.commit()
+    cursor.close()
+    print (a)
+    return a
 
 def OrganizerMenu1(message):
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
@@ -453,36 +474,99 @@ def OrganizerIf(message):
     elif (message.text == 'Другие запросы (1 часть)'):
         OrganizerMenu2(message)
     elif (message.text == 'Внести временные слоты в календарь'):
-        bot.send_message(message.chat.id, "Выберите категорию запроса")
         sloty_if(message)
+    elif (message.text == 'Внести результаты по очному этапу'):
+        msg = bot.send_message(message.chat.id, "Введите ID ученика")
+        bot.register_next_step_handler(msg, OchniyEtapResults)
+    elif (message.text == 'Узнать информацию об ученике'):
+        msg = bot.send_message(message.chat.id, "Введите имя ученика")
+        bot.register_next_step_handler(msg, SelectStudentInfo)
 
+def SelectStudentInfo(message):
+    studentid = message.text
+    selectstudent(message, studentid)
+
+
+def OchniyEtapResults(message):
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
+    cool = types.KeyboardButton('Зачислен')
+    notcool = types.KeyboardButton('Не зачислен')
+    inprocess = types.KeyboardButton('В ожидании')
+    markup.add(cool, notcool, inprocess)
+    msg = bot.send_message(message.chat.id,"Выберите результат тестирования",reply_markup=markup)
+    bot.register_next_step_handler(msg, OcniyEtapResultsIf)
+
+
+def OcniyEtapResultsIf(message):
+    if message.text == 'Зaчислен':
+        update_student('Зачислен',"status",OrganizerIf(message.chat.id))
 
 
 def sloty_if(message):
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
-    data_answer = types.KeyboardButton('Хочу добавить дату')
-    time_answer = types.KeyboardButton('Хочу добавить время')
-    markup.add(data_answer,time_answer)
-    msg = bot.send_message(message.chat.id,"Вы хотите добавить день или время",reply_markup=markup)
+    data_answer = types.KeyboardButton('Добавить дату и время')
+    data2_answer = types.KeyboardButton('Удалить последнюю запись')
+    data3_answer = types.KeyboardButton('Удалить день')
+    data4_answer = types.KeyboardButton('Назад')
+    markup.add(data_answer,data2_answer,data3_answer,data4_answer)
+    msg = bot.send_message(message.chat.id,"Выберите категорию запроса",reply_markup=markup)
     bot.register_next_step_handler(msg,vnesti_sloty_if)
 def vnesti_sloty_if(message):
-    if message.text == 'Хочу добавить дату':
-       msg = bot.send_message(message.chat.id, "Введите день")
+    if message.text == 'Добавить дату и время':
+       msg = bot.send_message(message.chat.id, "Введите день, который хотите добавить")
        bot.register_next_step_handler(msg,vnesti_sloty_date)
-    elif message.text == 'Хочу добавить время':
-        msg = bot.send_message(message.chat.id,"В какой день вы хотите добавить время?")
-        bot.register_next_step_handler(msg, vnesti_sloty_time)
+    elif message.text == 'Удалить последнюю запись':
+        delete_last_note(message)
+    elif message.text == 'Удалить день':
+        msg = bot.send_message(message.chat.id, "Введите день, который хотите удалить")
+        bot.register_next_step_handler(msg, delete_full_day)
+    elif message.text == 'Назад':
+        OrganizerMenu1(message)
+
+
+def delete_sloty_date(date_id):
+    sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
+    cursor = sqlite_connection.cursor()
+    sqlite_select_query = f"""UPDATE calendar_interview
+    SET date_interview = "null", time_interview = "null"
+    WHERE id = {date_id}"""
+    cursor.execute(sqlite_select_query)
+    sqlite_connection.commit()
+    cursor.close()
+
+def delete_sloty_date_full(date_id):
+    sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
+    cursor = sqlite_connection.cursor()
+    sqlite_select_query = f"""UPDATE calendar_interview
+    SET date_interview = "null", time_interview = "null"
+    WHERE date_interview = {date_id}"""
+    cursor.execute(sqlite_select_query)
+    sqlite_connection.commit()
+    cursor.close()
+
+def delete_last_note(message):
+    day = CountDates()
+    delete_sloty_date(day)
+    bot.send_message(message.chat.id, "Запись удалена!")
+    OrganizerMenu1(message)
+
+
+def delete_full_day(message):
+    day = message.text
+    delete_sloty_date_full(day)
+    bot.send_message(message.chat.id, "День удалён!")
+    OrganizerMenu1(message)
 
 def vnesti_sloty_date(message):
     vnesti_date(message.text)
-    msg = bot.send_message(message.chat.id, "День успешно добавлен!")
-    bot.register_next_step_handler(msg, OrganizerMenu1)
+    msg = bot.send_message(message.chat.id, "Теперь введите время")
+    bot.register_next_step_handler(msg, vnesti_sloty_time)
 def vnesti_sloty_time(message):
+    day = CountDates()
     value_time = message.text
-    bot.send_message(message.chat.id,"Теперь напишите время, которое хотите добавить")
-    vnesti_time(message.text,value_time)
-    msg = bot.send_message(message.chat.id, "Время успешно добавлено!")
-    bot.register_next_step_handler(msg, OrganizerMenu1)
+    vnesti_time(value_time,day)
+    bot.send_message(message.chat.id, "Время успешно добавлено!")
+    OrganizerMenu1(message)
 
 
 def ImStudent1(message):
