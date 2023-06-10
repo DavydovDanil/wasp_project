@@ -4,7 +4,7 @@ from telebot import types
 import random
 from random import random, randrange, randint
 import sys
-
+hideBoard = types.ReplyKeyboardRemove()
 
 #    update_student(surname1, "surname", message.chat.id)
 #  update_student(name1, "name", message.chat.id)
@@ -364,7 +364,7 @@ def user_answer(message):
     if message.text == 'Я организатор':
 
         msg = bot.send_message(message.chat.id,
-                               'Введите ваш пароль')
+                               'Введите ваш пароль',reply_markup=hideBoard)
         bot.register_next_step_handler(msg, ImOrganiser)
 
     elif message.text == 'Я ученик':
@@ -476,20 +476,20 @@ def OrganizerIf(message):
     elif (message.text == 'Внести временные слоты в календарь'):
         sloty_if(message)
     elif (message.text == 'Выбрать статус кандидата'):
-        msg = bot.send_message(message.chat.id, "Введите ID ученика")
+        msg = bot.send_message(message.chat.id, "Введите ID ученика",reply_markup=hideBoard)
         bot.register_next_step_handler(msg, Status)
     elif (message.text == 'Узнать информацию об ученике'):
-        msg = bot.send_message(message.chat.id, "Введите ID ученика")
+        msg = bot.send_message(message.chat.id, "Введите ID ученика",reply_markup=hideBoard)
         bot.register_next_step_handler(msg, SelectStudentInfo)
     elif (message.text == 'Внести результаты по очному этапу'):
-        msg = bot.send_message(message.chat.id, "Введите ID ученика")
+        msg = bot.send_message(message.chat.id, "Введите ID ученика",reply_markup=hideBoard)
         bot.register_next_step_handler(msg, OchniyEtapRes)
 
 
 def OchniyEtapRes(message):
     global res
     res = message.text
-    msg = bot.send_message(message.chat.id, "Введите результат кандидата за очное тестирование")
+    msg = bot.send_message(message.chat.id, "Введите результат кандидата за очное тестирование",reply_markup=hideBoard)
     bot.register_next_step_handler(msg, OchniyEtapResIf)
 
 def OchniyEtapResIf(message):
@@ -539,11 +539,11 @@ def sloty_if(message):
 def vnesti_sloty_if(message):
     if message.text == 'Добавить дату и время':
        msg = bot.send_message(message.chat.id, "Введите день, который хотите добавить")
-       bot.register_next_step_handler(msg,vnesti_sloty_date)
+       bot.register_next_step_handler(msg,vnesti_sloty_date,reply_markup=hideBoard)
     elif message.text == 'Удалить последнюю запись':
         delete_last_note(message)
     elif message.text == 'Удалить день':
-        msg = bot.send_message(message.chat.id, "Введите день, который хотите удалить")
+        msg = bot.send_message(message.chat.id, "Введите день, который хотите удалить",reply_markup=hideBoard)
         bot.register_next_step_handler(msg, delete_full_day)
     elif message.text == 'Назад':
         OrganizerMenu1(message)
@@ -585,7 +585,7 @@ def delete_full_day(message):
 
 def vnesti_sloty_date(message):
     vnesti_date(message.text)
-    msg = bot.send_message(message.chat.id, "Теперь введите время")
+    msg = bot.send_message(message.chat.id, "Теперь введите время",reply_markup=hideBoard)
     bot.register_next_step_handler(msg, vnesti_sloty_time)
 def vnesti_sloty_time(message):
     day = CountDates()
@@ -599,7 +599,7 @@ def ImStudent1(message):
     remove = types.ReplyKeyboardRemove()
     if (message.text == 'Готов(a) регистрироваться!'):
         msg = bot.send_message(message.chat.id,
-                               'Вы были перенесены на этап регистрации. Введите имя (Пример: Антон)')
+                               'Вы были перенесены на этап регистрации. Введите имя (Пример: Антон)',reply_markup=hideBoard)
         bot.register_next_step_handler(msg, ImStudent2)
     else:
         user_answer(message)
@@ -608,7 +608,7 @@ def ImStudent1(message):
 def ImStudent2(message):
     remove = types.ReplyKeyboardRemove()
     msg = bot.send_message(message.chat.id,
-                           'Введите фамилию (Пример: Кисляков)')
+                           'Введите фамилию (Пример: Кисляков)',reply_markup=hideBoard)
     update_student(message.text, "name", message.chat.id)
 
     bot.register_next_step_handler(msg, ImStudent3)
@@ -617,7 +617,7 @@ def ImStudent2(message):
 def ImStudent3(message):
     remove = types.ReplyKeyboardRemove()
     msg = bot.send_message(message.chat.id,
-                           'Введите отчество (Пример: Юрьевич)')
+                           'Введите отчество (Пример: Юрьевич)',reply_markup=hideBoard)
     update_student(message.text, "surname", message.chat.id)
 
     bot.register_next_step_handler(msg, step22)
@@ -639,7 +639,7 @@ def step2(message):
     elif (message.text == 'Готов(a) регистрироваться!'):
 
         msg = bot.send_message(message.chat.id,
-                               'Вы были перенесены на этап регистрации. Введите фамилию, имя, отчество (Пример: Кисляков Антон Юрьевич)')
+                               'Вы были перенесены на этап регистрации. Введите фамилию, имя, отчество (Пример: Кисляков Антон Юрьевич)',reply_markup=hideBoard)
         bot.register_next_step_handler(msg, step22)
     else:
         bot.send_message(message.chat.id, 'Вы нажали что-то не то, и вас перебросило')
@@ -682,7 +682,7 @@ def gorod(message):
     back = types.KeyboardButton('Назад')
     markup.add(back)
     msg = bot.send_message(message.chat.id,
-                           'В каком городе ты живёшь? \nНапример: Москва \n(Обрати внимание, что курс проходит очно в Москве)')
+                           'В каком городе ты живёшь? \nНапример: Москва \n(Обрати внимание, что курс проходит очно в Москве)',reply_markup=hideBoard)
     bot.register_next_step_handler(msg, proverka_goroda)
 
 
@@ -696,7 +696,7 @@ def proverka_proverki_goroda(message):
     elif message.text == 'Назад':
         ImStudent1(message)
     else:
-        msg = bot.send_message(message.chat.id, "Выбери команду из меню")
+        msg = bot.send_message(message.chat.id, "Выбери команду из меню",reply_markup=hideBoard)
         gorod(msg)
 
 
@@ -715,7 +715,7 @@ def proverka_goroda(message):
 
 def phone(message):
     remove = types.ReplyKeyboardRemove()
-    msg = bot.send_message(message.chat.id, 'Введите номер телефона \n(Например "88005553535")')
+    msg = bot.send_message(message.chat.id, 'Введите номер телефона \n(Например "88005553535")',reply_markup=hideBoard)
     bot.register_next_step_handler(msg, proverka_phone)
 
 
@@ -747,7 +747,7 @@ def proverka_proverki_phone(message):
 
 def vvedite_pochtu(message):
     remove = types.ReplyKeyboardRemove()
-    msg = bot.send_message(message.chat.id, 'Введите почту \n(Например "kislyakovanton@lit1533.com")')
+    msg = bot.send_message(message.chat.id, 'Введите почту \n(Например "kislyakovanton@lit1533.com")',reply_markup=hideBoard)
     bot.register_next_step_handler(msg, proverka_pochtu)
 
 
@@ -781,7 +781,7 @@ def proverka_proverki_pochtu(message):
 def vvedite_school(message):
     remove = types.ReplyKeyboardRemove()
     msg = bot.send_message(message.chat.id,
-                           'Введите название вашего учебного заведения \n(Например "ГБОУ Школа №1488" или НИУ ВШЭ)')
+                           'Введите название вашего учебного заведения \n(Например "ГБОУ Школа №1488" или НИУ ВШЭ)',reply_markup=hideBoard)
     bot.register_next_step_handler(msg, proverka_school)
 
 
