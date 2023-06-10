@@ -80,13 +80,13 @@ def databasecreation_student():
 def selectstudent(studentid):
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
     cursor = sqlite_connection.cursor()
-    cursor.execute(f"""SELECT * FROM student_info
-                WHERE id = {studentid};""")
-    row = cursor.fetchall()
-    A = [elt[0] for elt in row]
+    cursor.execute(f"""SELECT id, id_v_chate, name, surname, patronymic, email, phone_number, first_stage_result, second_stage_result, school, city, status FROM student_info
+                WHERE id_v_chate = {studentid};""")
+    rows = list(cursor.fetchall())
+    rows1 = rows[0]
     sqlite_connection.commit()
     cursor.close()
-    return A[0]
+    return  rows1
 def update_student(value, table, idvchate):
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
     sqlite_update_query = """UPDATE student_info
@@ -362,6 +362,7 @@ def start(message):
 
 def user_answer(message):
     if message.text == 'Я организатор':
+
         msg = bot.send_message(message.chat.id,
                                'Введите ваш пароль')
         bot.register_next_step_handler(msg, ImOrganiser)
@@ -498,7 +499,9 @@ def OchniyEtapResIf(message):
 
 def SelectStudentInfo(message):
     studentid = message.text
-    selectstudent(message, studentid)
+    b = selectstudent(studentid)
+    bot.send_message(message.chat.id, f"ID: {b[0]}\nID в чате: {b[1]}\nИмя: {b[2]}\nФамилия: {b[3]}\nОтчество: {b[4]}\nEmail: {b[5]}\nНомер телефона: {b[6]}\n"
+                                      f"Результат за 1-ый тест: {b[7]}\nРезультат за 2-ой тест: {b[8]}\nШкола: {b[9]}\nГород: {b[10]}\nСтатус: {b[11]}\n")
 
 
 def Status(message):
@@ -509,12 +512,16 @@ def Status(message):
     notcool = types.KeyboardButton('Не зачислен')
     inprocess = types.KeyboardButton('В ожидании')
     markup.add(cool, notcool, inprocess)
-    msg = bot.send_message(message.chat.id,"Выберите статус кандидата",reply_markup=markup)
+    b = selectstudent(a)
+    msg = bot.send_message(message.chat.id,f"Выберите статус кандидата, текущий статус: {b[11]}",reply_markup=markup)
     bot.register_next_step_handler(msg, StatusIf)
 
 
 def StatusIf(message):
-    update_student(message.text, "status", a)
+    if message.text == 'Зачислен' or message.text == 'Не зачислен'or message.text == 'В ожидании':
+       update_student(message.text, "status", a)
+    else:
+        bot.send_message(message.chat.id,"Неправильный статус")
     OrganizerMenu1(message)
 
 
@@ -642,6 +649,7 @@ def step2(message):
 def step22(message):
     remove = types.ReplyKeyboardRemove()
     update_student(message.text, "patronymic", message.chat.id)
+    update_student("В ожидании", "status", message.chat.id)
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
     yes = types.KeyboardButton('Да')
     no = types.KeyboardButton('Нет')
@@ -661,6 +669,7 @@ def step23(message):
         update_student("null", "surname", message.chat.id)
         update_student("null", "patronymic", message.chat.id)
         update_student("null", "name", message.chat.id)
+
         ImStudent1(message)
     else:
         msg = bot.send_message(message.chat.id, "Вы написали что-то не то и вас перебросило в начальное меню")
@@ -838,13 +847,14 @@ def menu_testa(message):
     zadanie5 = select_random_test_task(5)
     answer1 = select_answer(zadanie1)
     answer2 = select_answer(zadanie2)
+    answer3 = select_answer(zadanie3)
     answer4 = select_answer(zadanie4)
     answer5 = select_answer(zadanie5)
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
     cursor = sqlite_connection.cursor()
-    cursor.execute(f"""INSERT INTO tasks
+    cursor.execute("""INSERT INTO tasks
         (task_id_1, task_id_2, task_id_3, task_id_4, task_id_5, answer_1, answer_2, answer_3, answer_4, answer_5)
-        VALUES({zadanie1}, {zadanie2}, {zadanie3}, {zadanie4}, {zadanie5}, {answer1}, {answer2}, {answer4}, {answer4}, {answer5});""") #ДОДЕЛАТЬ НОРМАЛЬНЫЙ ОТВЕТ ДЛЯ НОМЕРА 3
+        VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);""", (zadanie1, zadanie2, zadanie3, zadanie4, zadanie5, answer1, answer2, answer3, answer4, answer5)) #ДОДЕЛАТЬ НОРМАЛЬНЫЙ ОТВЕТ ДЛЯ НОМЕРА 3
     sqlite_connection.commit()
     cursor.close()
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
