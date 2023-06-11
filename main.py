@@ -528,7 +528,26 @@ def OrganizerIf(message):
         bot.register_next_step_handler(msg, OchniyEtapRes)
     elif (message.text == 'Внести временные слоты в календарь (Время для очного интервью)'):
         vhoshu_slot(message)
+    elif (message.text == 'Оповестить всех'):
+        msg = bot.send_message(message.chat.id, "Введите ссобщение", reply_markup=hideBoard)
+        bot.register_next_step_handler(msg, Opoveschenie)
 
+
+def otpravit_message():
+    sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
+    cursor = sqlite_connection.cursor()
+    cursor.execute(f"""SELECT id_v_chate FROM student_info;""")
+    rows = list(cursor.fetchall())
+    sqlite_connection.commit()
+    cursor.close()
+    return rows
+def Opoveschenie(message):
+    alexander = message.text
+    list1 = otpravit_message()
+    print(list1)
+    for i in range(0,len(list1)):
+        list2 = list1[i]
+        bot.send_message(list2[0],alexander)
 
 def vhoshu_slot(message):
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
