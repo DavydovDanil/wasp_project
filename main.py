@@ -730,7 +730,7 @@ def vnesti_sloty_time(message):
 
 def ImStudent1(message):
     remove = types.ReplyKeyboardRemove()
-    if (message.text == 'Готов(a) регистрироваться!'):
+    if (message.text == 'Готов(a) регистрироваться!' or message.text == 'Вы нажали нечто не то' or message.text == 'Вы написали нечто не то'or message.text == 'Назад'):
         msg = bot.send_message(message.chat.id,
                                'Вы были перенесены на этап регистрации. Введите имя (Пример: Антон)',
                                reply_markup=hideBoard)
@@ -758,12 +758,11 @@ def ImStudent3(message):
 
 
 def step1(message):
-    remove = types.ReplyKeyboardRemove()
     if (message.text == 'Назад'):
         start(message)
     else:
         bot.send_message(message.chat.id, 'Вы нажали нечто не то')
-        start(message)
+        ImStudent1(message)
 
 
 def step2(message):
@@ -777,7 +776,7 @@ def step2(message):
                                reply_markup=hideBoard)
         bot.register_next_step_handler(msg, step22)
     else:
-        bot.send_message(message.chat.id, 'Вы нажали что-то не то, и вас перебросило')
+        bot.send_message(message.chat.id, 'Вы нажали нечто не то')
         start(message)
 
 
@@ -804,11 +803,10 @@ def step23(message):
         update_student("null", "surname", message.chat.id)
         update_student("null", "patronymic", message.chat.id)
         update_student("null", "name", message.chat.id)
-
         ImStudent1(message)
     else:
-        msg = bot.send_message(message.chat.id, "Вы написали что-то не то и вас перебросило в начальное меню")
-        start(message)
+        bot.send_message(message.chat.id, "Вы написали нечто не то")
+        ImStudent1(message)
 
 
 def gorod(message):
@@ -909,10 +907,10 @@ def proverka_proverki_pochtu(message):
     elif message.text == 'Да':
         vvedite_school(message)
     elif message.text == 'Назад':
-        vvedite_school(message)
+        phone(message)
     else:
         msg = bot.send_message(message.chat.id, "Выбери команду из меню")
-        vvedite_school(msg)
+        vvedite_pochtu(msg)
 
 
 def vvedite_school(message):
@@ -947,7 +945,7 @@ def proverka_proverki_school(message):
         vvedite_pochtu(message)
     else:
         msg = bot.send_message(message.chat.id, "Выбери команду из меню")
-        phone(msg)
+        vvedite_school(msg)
 
 
 def Vvedenie_K_Testu(message):
@@ -970,7 +968,7 @@ def proverka_gotovnosti_k_testu(message):
         bot.send_message(message.chat.id, 'Поехали!')
         menu_testa(message)
     elif message.text == 'Назад':
-        vvedite_pochtu(message)
+        vvedite_school(message)
     else:
         msg = bot.send_message(message.chat.id, "Выбери команду из меню")
         Vvedenie_K_Testu(msg)
