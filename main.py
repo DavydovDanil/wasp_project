@@ -449,31 +449,18 @@ def OrganizerMenu1(message):
     calendar_changes = types.KeyboardButton('Внести временные слоты в календарь')
     info_about_student = types.KeyboardButton('Узнать информацию об ученике')
     results = types.KeyboardButton('Внести результаты по очному этапу')
-    other_buttons = types.KeyboardButton('Другие запросы (2 часть)')
-    markup.add(tasks_quota, calendar_changes, info_about_student,results, other_buttons)
-    msg = bot.send_message(message.chat.id, 'Выберите категорию запроса', reply_markup=markup)
-    bot.register_next_step_handler(msg, OrganizerIf)
-
-
-def OrganizerMenu2(message):
-    markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
     status = types.KeyboardButton('Выбрать статус кандидата')
     etap_dates = types.KeyboardButton('Изменить даты этапов')
     group_message = types.KeyboardButton('Оповестить всех')
     next_etap = types.KeyboardButton('Отправить приглашение на следующий этап')
-    other_buttons = types.KeyboardButton('Другие запросы (1 часть)')
-    markup.add(status, etap_dates, group_message, next_etap, other_buttons)
-    msg = bot.send_message(message.chat.id, 'Выберите категорию запроса',
-                           reply_markup=markup)
+    markup.add(tasks_quota, calendar_changes, info_about_student,results, status, etap_dates, group_message, next_etap)
+    msg = bot.send_message(message.chat.id, 'Выберите категорию запроса', reply_markup=markup)
     bot.register_next_step_handler(msg, OrganizerIf)
 
 
 def OrganizerIf(message):
-    if (message.text == 'Другие запросы (2 часть)'):
-        OrganizerMenu2(message)
-    elif (message.text == 'Другие запросы (1 часть)'):
-        OrganizerMenu1(message)
-    elif (message.text == 'Внести временные слоты в календарь'):
+
+    if (message.text == 'Внести временные слоты в календарь'):
         sloty_if(message)
     elif (message.text == 'Выбрать статус кандидата'):
         msg = bot.send_message(message.chat.id, "Введите ID ученика",reply_markup=hideBoard)
