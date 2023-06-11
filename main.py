@@ -66,7 +66,7 @@ def databasecreation_student():
                                             );''')
 
     cursor.execute('''CREATE TABLE IF NOT EXISTS calendar_interview_real(
-
+                                                id INTEGER PRIMARY KEY AUTOINCREMENT,
                                                 date_interview TEXT,
                                                 time_interview TEXT,
                                                 student_info_id INTEGER);''')
@@ -450,12 +450,31 @@ def vnesti_date(value_date):
     cursor.close()
 
 
+def vnoshu_date(value_date):
+    sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
+    cursor = sqlite_connection.cursor()
+    cursor.execute("""INSERT INTO calendar_interview_real(date_interview)
+                    VALUES(\'""" + str(value_date) + """\')""")
+    sqlite_connection.commit()
+    cursor.close()
+
+
 def vnesti_time(value_time, id):
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
     cursor = sqlite_connection.cursor()
     a = """UPDATE calendar_interview SET time_interview = \'""" + str(value_time) + """\'
     WHERE id = \'""" + str(id) + """\'"""
     cursor.execute(a)
+    sqlite_connection.commit()
+    cursor.close()
+
+
+def vnoshu_time(value_time, id):
+    sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
+    cursor = sqlite_connection.cursor()
+    d = """UPDATE calendar_interview_real SET time_interview = \'""" + str(value_time) + """\'
+    WHERE id = \'""" + str(id) + """\'"""
+    cursor.execute(d)
     sqlite_connection.commit()
     cursor.close()
 
@@ -471,6 +490,15 @@ def CountDates():
     return a
 
 
+def CountDates2():
+    sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
+    cursor = sqlite_connection.cursor()
+    sqlite_select_query = """SELECT COUNT(*) as num FROM calendar_interview_real """
+    cursor.execute(sqlite_select_query)
+    a = cursor.fetchone()[0]
+    sqlite_connection.commit()
+    cursor.close()
+    return a
 def OrganizerMenu1(message):
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
     tasks_quota = types.KeyboardButton('Выбрать квоту зачисленных')
@@ -498,6 +526,44 @@ def OrganizerIf(message):
     elif (message.text == 'Внести результаты по очному этапу'):
         msg = bot.send_message(message.chat.id, "Введите ID ученика", reply_markup=hideBoard)
         bot.register_next_step_handler(msg, OchniyEtapRes)
+    elif (message.text == 'Внести временные слоты в календарь (Время для очного интервью)'):
+        vhoshu_slot(message)
+
+
+def vhoshu_slot(message):
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
+    data_answer = types.KeyboardButton('Добавить дату и время')
+    data2_answer = types.KeyboardButton('Удалить последнюю запись')
+    data3_answer = types.KeyboardButton('Удалить день')
+    data4_answer = types.KeyboardButton('Назад')
+    markup.add(data_answer, data2_answer, data3_answer, data4_answer)
+    msg = bot.send_message(message.chat.id, "Выберите категорию запроса", reply_markup=markup)
+    bot.register_next_step_handler(msg, vnoshu_slot_if)
+
+
+def vnoshu_slot_if(message):
+    if message.text == 'Добавить дату и время':
+        msg = bot.send_message(message.chat.id, "Введите день, который хотите добавить")
+        bot.register_next_step_handler(msg, vnoshu_date_aye)
+    elif message.text == 'Удалить последнюю запись':
+        udalit_last_note(message)
+    elif message.text == 'Удалить день':
+        msg = bot.send_message(message.chat.id, "Введите день, который хотите удалить")
+        bot.register_next_step_handler(msg, udalit_full_day)
+    elif message.text == 'Назад':
+        OrganizerMenu1(message)
+
+
+def vnoshu_date_aye(message):
+    vnoshu_date(message.text)
+    msg = bot.send_message(message.chat.id, "Теперь введите время", reply_markup=hideBoard)
+    bot.register_next_step_handler(msg, vnoshu_time_aye)
+def vnoshu_time_aye(message):
+    day = CountDates2()
+    value_time = message.text
+    vnoshu_time(value_time, day)
+    bot.send_message(message.chat.id, "Время успешно добавлено!")
+    OrganizerMenu1(message)
 
 
 def OchniyEtapRes(message):
@@ -577,6 +643,16 @@ def delete_sloty_date(date_id):
     cursor.close()
 
 
+def udalit_sloty_date(date_id):
+    sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
+    cursor = sqlite_connection.cursor()
+    sqlite_select_query = f"""UPDATE calendar_interview_real
+    SET date_interview = "null", time_interview = "null"
+    WHERE id = {date_id}"""
+    cursor.execute(sqlite_select_query)
+    sqlite_connection.commit()
+    cursor.close()
+
 def delete_sloty_date_full(date_id):
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
     cursor = sqlite_connection.cursor()
@@ -587,7 +663,15 @@ def delete_sloty_date_full(date_id):
     sqlite_connection.commit()
     cursor.close()
 
-
+def udalit_sloty_date_full(date_id):
+    sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
+    cursor = sqlite_connection.cursor()
+    sqlite_select_query = f"""UPDATE calendar_interview_real
+    SET date_interview = "null", time_interview = "null"
+    WHERE date_interview = {date_id}"""
+    cursor.execute(sqlite_select_query)
+    sqlite_connection.commit()
+    cursor.close()
 def delete_last_note(message):
     day = CountDates()
     delete_sloty_date(day)
@@ -595,13 +679,22 @@ def delete_last_note(message):
     OrganizerMenu1(message)
 
 
+def udalit_last_note(message):
+    day = CountDates()
+    udalit_sloty_date(day)
+    bot.send_message(message.chat.id, "Запись удалена!")
+    OrganizerMenu1(message)
 def delete_full_day(message):
     day = message.text
     delete_sloty_date_full(day)
     bot.send_message(message.chat.id, "День удалён!")
     OrganizerMenu1(message)
 
-
+def udalit_full_day(message):
+    day = message.text
+    udalit_sloty_date_full(day)
+    bot.send_message(message.chat.id, "День удалён!")
+    OrganizerMenu1(message)
 def vnesti_sloty_date(message):
     vnesti_date(message.text)
     msg = bot.send_message(message.chat.id, "Теперь введите время", reply_markup=hideBoard)
@@ -882,7 +975,7 @@ def menu_testa(message):
         (task_id_1, task_id_2, task_id_3, task_id_4, task_id_5, answer_1, answer_2, answer_3, answer_4, answer_5)
         VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);""", (
     zadanie1, zadanie2, zadanie3, zadanie4, zadanie5, answer1, answer2, answer3, answer4,
-    answer5))  # ДОДЕЛАТЬ НОРМАЛЬНЫЙ ОТВЕТ ДЛЯ НОМЕРА 3
+    answer5))
     sqlite_connection.commit()
     cursor.close()
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
