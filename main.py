@@ -92,6 +92,15 @@ def select_date_ochniy_etap():
     return rows
 
 
+def select_date_interview():
+    sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
+    cursor = sqlite_connection.cursor()
+    cursor.execute(f"""SELECT date_interview, time_interview FROM calendar_interview_real
+                    WHERE student_info_id IS NULL;""")
+    rows = list(cursor.fetchall())
+    sqlite_connection.commit()
+    cursor.close()
+    return rows
 def selectstudent(studentid):
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
     cursor = sqlite_connection.cursor()
@@ -125,6 +134,16 @@ def update_dateochniyetap(value, date, time):
     sqlite_connection.commit()
     cursor.close()
 
+
+def update_interview(value, date, time):
+    sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
+    sqlite_update_query = """UPDATE calendar_interview_real
+        SET student_info_id = \'""" + str(value) + """\'
+        WHERE date_interview = \'""" + str(date) + """\' and time_interview = \'""" + str(time) + """\'"""
+    cursor = sqlite_connection.cursor()
+    cursor.execute(sqlite_update_query)
+    sqlite_connection.commit()
+    cursor.close()
 
 def insert_test():
     type_1_task_1 = "1.	Определите, в какой минимальной системе счисления может быть записано число 2537." \
@@ -518,20 +537,54 @@ def OrganizerIf(message):
     if (message.text == 'Внести временные слоты в календарь (Время для очного тестирования)'):
         sloty_if(message)
     elif (message.text == 'Выбрать статус кандидата'):
-        msg = bot.send_message(message.chat.id, "Введите ID ученика", reply_markup=hideBoard)
+        msg = bot.send_message(message.chat.id, "'Введите ID в чате' ученика", reply_markup=hideBoard)
         bot.register_next_step_handler(msg, Status)
     elif (message.text == 'Узнать информацию об ученике'):
-        msg = bot.send_message(message.chat.id, "Введите ID ученика", reply_markup=hideBoard)
+        msg = bot.send_message(message.chat.id, "'Введите ID в чате' ученика", reply_markup=hideBoard)
         bot.register_next_step_handler(msg, SelectStudentInfo)
     elif (message.text == 'Внести результаты по очному этапу'):
-        msg = bot.send_message(message.chat.id, "Введите ID ученика", reply_markup=hideBoard)
+        msg = bot.send_message(message.chat.id, "'Введите ID в чате' ученика", reply_markup=hideBoard)
         bot.register_next_step_handler(msg, OchniyEtapRes)
     elif (message.text == 'Внести временные слоты в календарь (Время для очного интервью)'):
         vhoshu_slot(message)
     elif (message.text == 'Оповестить всех'):
         msg = bot.send_message(message.chat.id, "Введите ссобщение", reply_markup=hideBoard)
         bot.register_next_step_handler(msg, Opoveschenie)
+    elif (message.text == 'Отправить приглашение на следующий этап'):
+        msg = bot.send_message(message.chat.id, "'Введите ID в чате' ученика")
+        bot.register_next_step_handler(msg, SledEtap)
 
+
+def SledEtap(message):
+    bot.send_message(message.text,'Поздравляю, ты прошёл оба теста, теперь тебе нужно пройти очное интервью')
+    next_etap(message)
+
+
+def next_etap(message):
+    kortezh0 = select_date_interview()
+    count = 0
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
+    for i in range(len(kortezh0)):
+        kortezh1 = kortezh0[count]
+        back = types.KeyboardButton(f"{kortezh1[0]} ({kortezh1[1]})")
+        markup.add(back)
+        count += 1
+    msg = bot.send_message(message.chat.id,
+                           'Выбери удобные тебе дату и время проведения очного этапа из предложенного списка. Если ты не нашёл время, подходящее для тебя, свяжись с организатором',
+                           reply_markup=markup)
+    bot.register_next_step_handler(msg, insert_id_interview)
+
+
+def insert_id_interview(message):
+    string = message.text
+    stringsplit = string.split()
+    string1 = stringsplit[0]
+    string2 = stringsplit[1]
+    b = string2.split('(')
+    c = b[1].split(')')
+    print(string1, c[0])
+    id = select_user_id(message.chat.id)
+    update_interview(id, string1, c[0])
 
 def otpravit_message():
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
@@ -955,7 +1008,7 @@ def Vvedenie_K_Testu(message):
     yes = types.KeyboardButton('Да')
     back = types.KeyboardButton('Назад')
     markup.add(yes, no, back)
-    msg = bot.send_message(message.chat.id, 'Теперь тебе нужно пройти тест, который будет длиться 1 час\nТы готов?',
+    msg = bot.send_message(message.chat.id, 'Теперь тебе нужно пройти несложный тест\nТы готов?',
                            reply_markup=markup)
     bot.register_next_step_handler(msg, proverka_gotovnosti_k_testu)
 
