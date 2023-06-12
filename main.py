@@ -108,7 +108,7 @@ def select_date_interview():
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
     cursor = sqlite_connection.cursor()
     cursor.execute(f"""SELECT date_interview, time_interview FROM calendar_interview_real
-                    WHERE student_info_id IS NULL;""")
+                    WHERE student_info_id IS NULL AND date_interview <> "null" OR student_info_id = '' AND date_interview <> "null" ;""")
     rows = list(cursor.fetchall())
     sqlite_connection.commit()
     cursor.close()
