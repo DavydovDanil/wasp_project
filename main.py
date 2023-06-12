@@ -458,11 +458,8 @@ def user_answer(message):
         cursor = sqlite_connection.cursor()
         cursor.close()
     elif message.text == 'Зачем нужен бот?':
-        markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
-        back = types.KeyboardButton('Назад')
-        markup.add(back)
-        msge = bot.send_message(message.chat.id, 'Бот нужен для помощи в регистрации на курсы WASP Academy',
-                                reply_markup=markup)
+
+        msge = bot.send_message(message.chat.id, 'Бот нужен для помощи в регистрации на курсы WASP Academy')
         bot.register_next_step_handler(msge, step1)
 
 
@@ -554,13 +551,13 @@ def OrganizerIf(message):
     if (message.text == 'Внести временные слоты в календарь (Время для очного тестирования)'):
         sloty_if(message)
     elif (message.text == 'Выбрать статус кандидата'):
-        msg = bot.send_message(message.chat.id, "'Введите ID в чате' ученика", reply_markup=hideBoard)
+        msg = bot.send_message(message.chat.id, "Введите 'ID в чате' ученика", reply_markup=hideBoard)
         bot.register_next_step_handler(msg, Status)
     elif (message.text == 'Узнать информацию об ученике'):
         msg = bot.send_message(message.chat.id, "'Введите ID в чате' ученика", reply_markup=hideBoard)
         bot.register_next_step_handler(msg, SelectStudentInfo)
     elif (message.text == 'Внести результаты по очному этапу'):
-        msg = bot.send_message(message.chat.id, "'Введите ID в чате' ученика", reply_markup=hideBoard)
+        msg = bot.send_message(message.chat.id, "Введите 'ID в чате' ученика", reply_markup=hideBoard)
         bot.register_next_step_handler(msg, OchniyEtapRes)
     elif (message.text == 'Внести временные слоты в календарь (Время для очного интервью)'):
         vhoshu_slot(message)
@@ -568,44 +565,94 @@ def OrganizerIf(message):
         msg = bot.send_message(message.chat.id, "Введите ссобщение", reply_markup=hideBoard)
         bot.register_next_step_handler(msg, Opoveschenie)
     elif (message.text == 'Отправить приглашение на интервью'):
-        msg = bot.send_message(message.chat.id, "'Введите ID в чате' ученика")
+        msg = bot.send_message(message.chat.id, "Введите 'ID в чате' ученика")
         bot.register_next_step_handler(msg, SledEtap)
     elif (message.text == 'Посмотреть квоту зачисленных'):
-        bot.send_message(message.chat.id, "Напишите, сколько учеников хотите пригласить на интервью",
+        msg = bot.send_message(message.chat.id, "Напишите, сколько учеников хотите пригласить на интервью",
                          reply_markup=hideBoard)
-        Vibrat_qoutu(message)
-
-
+        bot.register_next_step_handler(msg, Vibrat_qoutu)
 def Vibrat_qoutu(message):
-    limit = 3# int(message.text)
+    limit = int(message.text.lower())
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
+    yes = types.KeyboardButton('Да')
+    no = types.KeyboardButton('Нет')
+    markup.add(yes, no)
+    global spisok_zach
+    #ДОБАВИТЬ эксепшон
     spisok_zach = select_quota(limit)
     for i in range(0, len(spisok_zach)):
         list = spisok_zach[i]
-        print(list[0], list[1], list[2], list[3], list[4], list[5])
         bot.send_message(message.chat.id,
-                         f"ID: {list[0]}; ID в чате: {list[1]}; Имя: {list[2]}; Фамилия: {list[3]}; Отчество: {list[4]}; Результат за тест: {list[5]}")
-
-
+                         f"ID: {list[0]};\nID в чате: {list[1]};\nИмя: {list[2]};\nФамилия: {list[3]};\nОтчество: {list[4]};\nРезультат за тест: {list[5]}")
+    msg = bot.send_message(message.chat.id, 'Вы хотите отправить групповое приглашение на интервью',reply_markup=markup)
+    bot.register_next_step_handler(msg,vibrat_quotu_if)
+def vibrat_quotu_if(message):
+    if (message.text == 'Да'):
+        global list3
+        list3 = []
+        for i in range(0, len(spisok_zach)):
+            list = spisok_zach[i]
+            list3.append(list[1])
+        for i in range(0,len(list3)):
+            bot.send_message(list3[i],
+                             f"Внимание!")
+        SledEtap2(message)
+        print(list3)
+    else:
+        OrganizerMenu1(message)
 def SledEtap(message):
-    bot.send_message(message.text, 'Поздравляю, ты прошёл оба теста, теперь тебе нужно пройти очное интервью')
+    global etap
+    etap = message.text
+    bot.send_message(etap, 'Поздравляю, ты прошёл оба теста, теперь тебе нужно пройти очное интервью')
     next_etap(message)
-
-
+def SledEtap2():
+    for i in range(0, len(list3)):
+        bot.send_message(list3[i], 'Поздравляю, ты прошёл оба теста, теперь тебе нужно пройти очное интервью, свяжись с организаторами: \nsupport@wasp-academy.com',
+                         reply_markup=hideBoard)
+    #next_etap2(message)
 def next_etap(message):
     kortezh0 = select_date_interview()
-    count = 0
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
     for i in range(len(kortezh0)):
-        kortezh1 = kortezh0[count]
+        kortezh1 = kortezh0[i]
         back = types.KeyboardButton(f"{kortezh1[0]} ({kortezh1[1]})")
         markup.add(back)
-        count += 1
-    msg = bot.send_message(message.chat.id,
-                           'Выбери удобные тебе дату и время проведения очного этапа из предложенного списка. Если ты не нашёл время, подходящее для тебя, свяжись с организатором',
+
+
+    msg = bot.send_message(etap,
+                           'Выбери удобные тебе дату и время проведения очного этапа из предложенного списка. Если ты не нашёл время, подходящее для тебя, свяжись с организатором\nsupport@wasp-academy.com',
                            reply_markup=markup)
     bot.register_next_step_handler(msg, insert_id_interview)
-
-
+'''def next_etap2(message):
+    if(message.text == 'Да'):
+        kortezh0 = select_date_interview()
+        count = 0
+        markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
+        for i in range(len(kortezh0)):
+            kortezh1 = kortezh0[count]
+            back = types.KeyboardButton(f"{kortezh1[0]} ({kortezh1[1]})")
+            markup.add(back)
+            count += 1
+        for i in range(0, len(list3)):
+            msg = bot.send_message(list3[i],
+                                   'Выбери удобные тебе дату и время проведения очного этапа из предложенного списка. Если ты не нашёл время, подходящее для тебя, свяжись с организатором',
+                                   reply_markup=markup)
+        bot.register_next_step_handler(msg, insert_id_interview2)
+    elif(message.text == 'Нет'):
+        bot.send_message(message.chat.id, "Напиши организаторам, как будешь готов")
+    else:
+        bot.send_message(message.chat.id, "Будь умнее")'''
+def insert_id_interview2(message):
+    string = message.text
+    stringsplit = string.split()
+    string1 = stringsplit[0]
+    string2 = stringsplit[1]
+    b = string2.split('(')
+    c = b[1].split(')')
+    print(string1, c[0])
+    for i in range(0, len(list3)):
+        id = select_user_id(list3[i])
+        update_interview(id, string1, c[0])
 def insert_id_interview(message):
     string = message.text
     stringsplit = string.split()
@@ -693,7 +740,7 @@ def OchniyEtapResIf(message):
         OrganizerMenu1(message)
 
 
-def SelectStudentInfo(message):
+def SelectStudentInfo(message): #поправить
     studentid = message.text
     b = selectstudent(studentid)
     bot.send_message(message.chat.id,
@@ -701,7 +748,7 @@ def SelectStudentInfo(message):
                      f"Результат за 1-ый тест: {b[7]}\nРезультат за 2-ой тест: {b[8]}\nШкола: {b[9]}\nГород: {b[10]}\nСтатус: {b[11]}\n")
 
 
-def Status(message):
+def Status(message): #поправить
     global a
     a = message.text
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
