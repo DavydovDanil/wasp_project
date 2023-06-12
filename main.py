@@ -24,7 +24,7 @@ def databasecreation_student():
                                         email TEXT ,
                                         phone_number INTEGER ,
                                         first_stage_result TEXT,
-                                        second_stage_result TEXT,
+                                        second_stage_result INTEGER,
                                         school TEXT ,
                                         city TEXT ,
                                         status TEXT );''')
@@ -81,6 +81,18 @@ def databasecreation_student():
     cursor.close()
 
 
+def select_quota(limit):
+    sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
+    cursor = sqlite_connection.cursor()
+    cursor.execute(f"""SELECT id, id_v_chate, name, surname, patronymic, second_stage_result FROM student_info
+                    ORDER BY second_stage_result DESC 
+                    LIMIT {limit};""")
+    rows = list(cursor.fetchall())
+    sqlite_connection.commit()
+    cursor.close()
+    return rows
+
+
 def select_date_ochniy_etap():
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
     cursor = sqlite_connection.cursor()
@@ -101,6 +113,8 @@ def select_date_interview():
     sqlite_connection.commit()
     cursor.close()
     return rows
+
+
 def selectstudent(studentid):
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
     cursor = sqlite_connection.cursor()
@@ -144,6 +158,7 @@ def update_interview(value, date, time):
     cursor.execute(sqlite_update_query)
     sqlite_connection.commit()
     cursor.close()
+
 
 def insert_test():
     type_1_task_1 = "1.	Определите, в какой минимальной системе счисления может быть записано число 2537." \
@@ -518,16 +533,18 @@ def CountDates2():
     sqlite_connection.commit()
     cursor.close()
     return a
+
+
 def OrganizerMenu1(message):
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
-    tasks_quota = types.KeyboardButton('Выбрать квоту зачисленных')
+    tasks_quota = types.KeyboardButton('Посмотреть квоту зачисленных')
     calendar_changes = types.KeyboardButton('Внести временные слоты в календарь (Время для очного тестирования)')
     info_about_student = types.KeyboardButton('Узнать информацию об ученике')
     results = types.KeyboardButton('Внести результаты по очному этапу')
     status = types.KeyboardButton('Выбрать статус кандидата')
     interview = types.KeyboardButton('Внести временные слоты в календарь (Время для очного интервью)')
     group_message = types.KeyboardButton('Оповестить всех')
-    next_etap = types.KeyboardButton('Отправить приглашение на следующий этап')
+    next_etap = types.KeyboardButton('Отправить приглашение на интервью')
     markup.add(tasks_quota, calendar_changes, info_about_student, results, status, interview, group_message, next_etap)
     msg = bot.send_message(message.chat.id, 'Выберите категорию запроса', reply_markup=markup)
     bot.register_next_step_handler(msg, OrganizerIf)
@@ -550,13 +567,27 @@ def OrganizerIf(message):
     elif (message.text == 'Оповестить всех'):
         msg = bot.send_message(message.chat.id, "Введите ссобщение", reply_markup=hideBoard)
         bot.register_next_step_handler(msg, Opoveschenie)
-    elif (message.text == 'Отправить приглашение на следующий этап'):
+    elif (message.text == 'Отправить приглашение на интервью'):
         msg = bot.send_message(message.chat.id, "'Введите ID в чате' ученика")
         bot.register_next_step_handler(msg, SledEtap)
+    elif (message.text == 'Посмотреть квоту зачисленных'):
+        bot.send_message(message.chat.id, "Напишите, сколько учеников хотите пригласить на интервью",
+                         reply_markup=hideBoard)
+        Vibrat_qoutu(message)
+
+
+def Vibrat_qoutu(message):
+    limit = 3# int(message.text)
+    spisok_zach = select_quota(limit)
+    for i in range(0, len(spisok_zach)):
+        list = spisok_zach[i]
+        print(list[0], list[1], list[2], list[3], list[4], list[5])
+        bot.send_message(message.chat.id,
+                         f"ID: {list[0]}; ID в чате: {list[1]}; Имя: {list[2]}; Фамилия: {list[3]}; Отчество: {list[4]}; Результат за тест: {list[5]}")
 
 
 def SledEtap(message):
-    bot.send_message(message.text,'Поздравляю, ты прошёл оба теста, теперь тебе нужно пройти очное интервью')
+    bot.send_message(message.text, 'Поздравляю, ты прошёл оба теста, теперь тебе нужно пройти очное интервью')
     next_etap(message)
 
 
@@ -586,6 +617,7 @@ def insert_id_interview(message):
     id = select_user_id(message.chat.id)
     update_interview(id, string1, c[0])
 
+
 def otpravit_message():
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
     cursor = sqlite_connection.cursor()
@@ -594,13 +626,16 @@ def otpravit_message():
     sqlite_connection.commit()
     cursor.close()
     return rows
+
+
 def Opoveschenie(message):
     alexander = message.text
     list1 = otpravit_message()
     print(list1)
-    for i in range(0,len(list1)):
+    for i in range(0, len(list1)):
         list2 = list1[i]
-        bot.send_message(list2[0],alexander)
+        bot.send_message(list2[0], alexander)
+
 
 def vhoshu_slot(message):
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
@@ -630,6 +665,8 @@ def vnoshu_date_aye(message):
     vnoshu_date(message.text)
     msg = bot.send_message(message.chat.id, "Теперь введите время", reply_markup=hideBoard)
     bot.register_next_step_handler(msg, vnoshu_time_aye)
+
+
 def vnoshu_time_aye(message):
     day = CountDates2()
     value_time = message.text
@@ -646,9 +683,14 @@ def OchniyEtapRes(message):
 
 
 def OchniyEtapResIf(message):
-    update_student(message.text, "second_stage_result", res)
-    bot.send_message(message.chat.id, "Результат сохранён")
-    OrganizerMenu1(message)
+    try:
+        num1 = int(message.text)
+        update_student(num1, "second_stage_result", res)
+        bot.send_message(message.chat.id, "Результат сохранён")
+        OrganizerMenu1(message)
+    except:
+        bot.send_message(message.chat.id, 'В следующий раз вводите результат числом')
+        OrganizerMenu1(message)
 
 
 def SelectStudentInfo(message):
@@ -725,6 +767,7 @@ def udalit_sloty_date(date_id):
     sqlite_connection.commit()
     cursor.close()
 
+
 def delete_sloty_date_full(date_id):
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
     cursor = sqlite_connection.cursor()
@@ -735,6 +778,7 @@ def delete_sloty_date_full(date_id):
     sqlite_connection.commit()
     cursor.close()
 
+
 def udalit_sloty_date_full(date_id):
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
     cursor = sqlite_connection.cursor()
@@ -744,6 +788,8 @@ def udalit_sloty_date_full(date_id):
     cursor.execute(sqlite_select_query)
     sqlite_connection.commit()
     cursor.close()
+
+
 def delete_last_note(message):
     day = CountDates()
     delete_sloty_date(day)
@@ -756,17 +802,22 @@ def udalit_last_note(message):
     udalit_sloty_date(day)
     bot.send_message(message.chat.id, "Запись удалена!")
     OrganizerMenu1(message)
+
+
 def delete_full_day(message):
     day = message.text
     delete_sloty_date_full(day)
     bot.send_message(message.chat.id, "День удалён!")
     OrganizerMenu1(message)
 
+
 def udalit_full_day(message):
     day = message.text
     udalit_sloty_date_full(day)
     bot.send_message(message.chat.id, "День удалён!")
     OrganizerMenu1(message)
+
+
 def vnesti_sloty_date(message):
     vnesti_date(message.text)
     msg = bot.send_message(message.chat.id, "Теперь введите время", reply_markup=hideBoard)
@@ -783,7 +834,8 @@ def vnesti_sloty_time(message):
 
 def ImStudent1(message):
     remove = types.ReplyKeyboardRemove()
-    if (message.text == 'Готов(a) регистрироваться!' or message.text == 'Вы нажали нечто не то' or message.text == 'Вы написали нечто не то'or message.text == 'Назад'):
+    if (
+            message.text == 'Готов(a) регистрироваться!' or message.text == 'Вы нажали нечто не то' or message.text == 'Вы написали нечто не то' or message.text == 'Назад'):
         msg = bot.send_message(message.chat.id,
                                'Вы были перенесены на этап регистрации. Введите имя (Пример: Антон)',
                                reply_markup=hideBoard)
@@ -1044,8 +1096,8 @@ def menu_testa(message):
     cursor.execute("""INSERT INTO tasks
         (task_id_1, task_id_2, task_id_3, task_id_4, task_id_5, answer_1, answer_2, answer_3, answer_4, answer_5)
         VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);""", (
-    zadanie1, zadanie2, zadanie3, zadanie4, zadanie5, answer1, answer2, answer3, answer4,
-    answer5))
+        zadanie1, zadanie2, zadanie3, zadanie4, zadanie5, answer1, answer2, answer3, answer4,
+        answer5))
     sqlite_connection.commit()
     cursor.close()
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
