@@ -4,6 +4,7 @@ from telebot import types
 import random
 from random import random, randrange, randint
 import sys
+import datetime
 
 hideBoard = types.ReplyKeyboardRemove()
 
@@ -23,8 +24,9 @@ def databasecreation_student():
                                         patronymic TEXT,
                                         email TEXT ,
                                         phone_number INTEGER ,
-                                        first_stage_result TEXT,
+                                        first_stage_result INTEGER,
                                         second_stage_result INTEGER,
+                                        interview_result INTEGER,
                                         school TEXT ,
                                         city TEXT ,
                                         status TEXT );''')
@@ -60,7 +62,7 @@ def databasecreation_student():
 
     cursor.execute('''CREATE TABLE IF NOT EXISTS calendar_interview(
                                             id INTEGER PRIMARY KEY AUTOINCREMENT,
-                                            date_interview TEXT ,
+                                            date_interview TEXT,
                                             time_interview TEXT,
                                             student_info_id INTEGER
                                             );''')
@@ -97,7 +99,7 @@ def select_date_ochniy_etap():
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
     cursor = sqlite_connection.cursor()
     cursor.execute(f"""SELECT date_interview, time_interview FROM calendar_interview
-                    WHERE student_info_id IS NULL;""")
+                    WHERE student_info_id IS NULL AND date_interview IS NOT NULL and time_interview IS NOT NULL and date_interview <> "null" and time_interview <> "null";""")
     rows = list(cursor.fetchall())
     sqlite_connection.commit()
     cursor.close()
@@ -141,6 +143,17 @@ def update_student(value, table, idvchate):
 def update_dateochniyetap(value, date, time):
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
     sqlite_update_query = """UPDATE calendar_interview
+        SET student_info_id = \'""" + str(value) + """\'
+        WHERE date_interview = \'""" + str(date) + """\' and time_interview = \'""" + str(time) + """\'"""
+    cursor = sqlite_connection.cursor()
+    cursor.execute(sqlite_update_query)
+    sqlite_connection.commit()
+    cursor.close()
+
+
+def update_dateinterview(value, date, time):
+    sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
+    sqlite_update_query = """UPDATE calendar_interview_real
         SET student_info_id = \'""" + str(value) + """\'
         WHERE date_interview = \'""" + str(date) + """\' and time_interview = \'""" + str(time) + """\'"""
     cursor = sqlite_connection.cursor()
@@ -313,61 +326,55 @@ def select_instruction_task(task_id):
 def select_sozdanniy_varik1(user_id):
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
     cursor = sqlite_connection.cursor()
-    cursor.execute(f"""SELECT task_id_1 FROM tasks
+    cursor.execute(
+        f"""SELECT task_id_1 FROM tasks
                     WHERE user_id = {user_id};""")
-    rows = cursor.fetchall()
-    A = [elt[0] for elt in rows]
+    rows = list(cursor.fetchall())
     sqlite_connection.commit()
-    cursor.close()
-    return A[0]
-
+    return rows
 
 def select_sozdanniy_varik2(user_id):
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
     cursor = sqlite_connection.cursor()
-    cursor.execute(f"""SELECT task_id_2 FROM tasks
-                    WHERE user_id = {user_id};""")
-    rows = cursor.fetchall()
-    A = [elt[0] for elt in rows]
+    cursor.execute(
+        f"""SELECT task_id_2 FROM tasks
+                        WHERE user_id = {user_id};""")
+    rows = list(cursor.fetchall())
     sqlite_connection.commit()
-    cursor.close()
-    return A[0]
+    return rows
 
 
 def select_sozdanniy_varik3(user_id):
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
     cursor = sqlite_connection.cursor()
-    cursor.execute(f"""SELECT task_id_3 FROM tasks
-                    WHERE user_id = {user_id};""")
-    rows = cursor.fetchall()
-    A = [elt[0] for elt in rows]
+    cursor.execute(
+        f"""SELECT task_id_3 FROM tasks
+                        WHERE user_id = {user_id};""")
+    rows = list(cursor.fetchall())
     sqlite_connection.commit()
-    cursor.close()
-    return A[0]
+    return rows
 
 
 def select_sozdanniy_varik4(user_id):
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
     cursor = sqlite_connection.cursor()
-    cursor.execute(f"""SELECT task_id_4 FROM tasks
-                    WHERE user_id = {user_id};""")
-    rows = cursor.fetchall()
-    A = [elt[0] for elt in rows]
+    cursor.execute(
+        f"""SELECT task_id_4 FROM tasks
+                        WHERE user_id = {user_id};""")
+    rows = list(cursor.fetchall())
     sqlite_connection.commit()
-    cursor.close()
-    return A[0]
+    return rows
 
 
 def select_sozdanniy_varik5(user_id):
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
     cursor = sqlite_connection.cursor()
-    cursor.execute(f"""SELECT task_id_5 FROM tasks
-                    WHERE user_id = {user_id};""")
-    rows = cursor.fetchall()
-    A = [elt[0] for elt in rows]
+    cursor.execute(
+        f"""SELECT task_id_5 FROM tasks
+                        WHERE user_id = {user_id};""")
+    rows = list(cursor.fetchall())
     sqlite_connection.commit()
-    cursor.close()
-    return A[0]
+    return rows
 
 
 def select_user_id(id_v_chate):
@@ -432,22 +439,15 @@ def user_answer(message):
     elif message.text == 'Я ученик':
         sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
         cursor = sqlite_connection.cursor()
-        sqlite_insert_query = """INSERT INTO student_info
-               (id_v_chate)
-               VALUES(\'""" + str(message.chat.id) + """\')"""
-        cursor.execute(sqlite_insert_query)
-        cursor = sqlite_connection.cursor()
-        sqlite_connection.commit()
         sqlite_select_query = """SELECT COUNT(*) as num FROM
                student_info WHERE id_v_chate LIKE \'""" + str(message.chat.id) + """\'"""
         cursor.execute(sqlite_select_query)
         a = cursor.fetchone()[0]
         # bot.send_message(message.chat.id, a)
-        if (a == 1 or a == 0):
+        if (a == 0):
             markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
-            back = types.KeyboardButton('Назад')
-            ready = types.KeyboardButton('Готов(a) регистрироваться!')
-            markup.add(ready, back)
+            ready = types.KeyboardButton('Готов(а) регистрироваться')
+            markup.add(ready)
             msg = bot.send_message(message.chat.id,
                                    'Поступление на наши курсы состоит из 4-ёх этапов: \n\n1) Заполнение анкеты\n2) Тест в онлайн-формате\n3) Тест в очном формате\n4) Интервью',
                                    reply_markup=markup)
@@ -459,8 +459,11 @@ def user_answer(message):
         cursor.close()
     elif message.text == 'Зачем нужен бот?':
 
-        msge = bot.send_message(message.chat.id, 'Бот нужен для помощи в регистрации на курсы WASP Academy')
-        bot.register_next_step_handler(msge, step1)
+        bot.send_message(message.chat.id, 'Бот нужен для помощи в регистрации на курсы WASP Academy')
+        step1(message)
+    else:
+        bot.send_message(message.chat.id, 'Выбирайте вариант из меню')
+        start(message)
 
 
 def ImOrganiser(message):
@@ -524,7 +527,7 @@ def CountDates():
 def CountDates2():
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
     cursor = sqlite_connection.cursor()
-    sqlite_select_query = """SELECT COUNT(*) as num FROM calendar_interview_real """
+    sqlite_select_query = """SELECT COUNT(*) as num FROM calendar_interview_real"""
     cursor.execute(sqlite_select_query)
     a = cursor.fetchone()[0]
     sqlite_connection.commit()
@@ -542,7 +545,9 @@ def OrganizerMenu1(message):
     interview = types.KeyboardButton('Внести временные слоты в календарь (Время для очного интервью)')
     group_message = types.KeyboardButton('Оповестить всех')
     next_etap = types.KeyboardButton('Отправить приглашение на интервью')
-    markup.add(tasks_quota, calendar_changes, info_about_student, results, status, interview, group_message, next_etap)
+    interview_results = types.KeyboardButton('Внести результаты за интервью')
+    markup.add(tasks_quota, calendar_changes, info_about_student, results, status, interview, group_message, next_etap,
+               interview_results)
     msg = bot.send_message(message.chat.id, 'Выберите категорию запроса', reply_markup=markup)
     bot.register_next_step_handler(msg, OrganizerIf)
 
@@ -562,67 +567,201 @@ def OrganizerIf(message):
     elif (message.text == 'Внести временные слоты в календарь (Время для очного интервью)'):
         vhoshu_slot(message)
     elif (message.text == 'Оповестить всех'):
-        msg = bot.send_message(message.chat.id, "Введите ссобщение", reply_markup=hideBoard)
+        msg = bot.send_message(message.chat.id, "Введите сообщение", reply_markup=hideBoard)
         bot.register_next_step_handler(msg, Opoveschenie)
     elif (message.text == 'Отправить приглашение на интервью'):
         msg = bot.send_message(message.chat.id, "Введите 'ID в чате' ученика")
         bot.register_next_step_handler(msg, SledEtap)
     elif (message.text == 'Посмотреть квоту зачисленных'):
-        msg = bot.send_message(message.chat.id, "Напишите, сколько учеников хотите пригласить на интервью",
-                         reply_markup=hideBoard)
-        bot.register_next_step_handler(msg, Vibrat_qoutu)
+        Vibrat_qoutu(message)
+    elif (message.text == 'Внести результаты за интервью'):
+        msg = bot.send_message(message.chat.id, "Введите 'ID в чате' кандидата")
+        bot.register_next_step_handler(msg, vnesenie)
+    else:
+        bot.send_message(message.chat.id, "Выберите вариант из меню")
+        OrganizerMenu1(message)
+
+
+def select_where_3():
+    sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
+    cursor = sqlite_connection.cursor()
+    cursor.execute(
+        f"""SELECT id, id_v_chate, name, surname, patronymic FROM student_info WHERE interview_result = 3;""")
+    rows = list(cursor.fetchall())
+    sqlite_connection.commit()
+    cursor.close()
+    return rows
+
+
+#def Vibrat_quotu(message):
+def vnesenie(message):
+    global idishnik
+    idishnik = message.text
+    listik = select_all_student_idis_v_chate()
+    print(listik)
+    count = 0
+    for i in range(0, len(listik)):
+        for j in range(0, len(listik)):
+            count+=1
+    print(count)
+    if(count == 1):
+        markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
+        mark1 = types.KeyboardButton('🟢')
+        mark2 = types.KeyboardButton('🟡')
+        mark3 = types.KeyboardButton('🔴')
+        markup.add(mark1, mark2, mark3)
+        msg = bot.send_message(message.chat.id, "Введите оценку, которую хотите поставить кандидату за интервью",
+                               reply_markup=markup)
+        bot.register_next_step_handler(msg, vnesenie_value)
+    else:
+        bot.send_message(message.chat.id, "Вы ввели некорректный id")
+        OrganizerMenu1(message)
+
+
+def select_all_student_idis_v_chate():
+    sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
+    cursor = sqlite_connection.cursor()
+    cursor.execute(f"""SELECT id_v_chate FROM student_info;""")
+    rows = list(cursor.fetchall())
+    sqlite_connection.commit()
+    cursor.close()
+    return rows
+
+
+def vnesenie_value(message):
+    try:
+            if (message.text == '🟢'):
+                value = 3
+                vnoshu_resy_za_interview(value, idishnik)
+                msg = bot.send_message(message.chat.id, "Данные успешно внесены")
+                OrganizerMenu1(message)
+            elif (message.text == '🟡'):
+                value = 2
+                vnoshu_resy_za_interview(value, idishnik)
+                msg = bot.send_message(message.chat.id, "Данные успешно внесены")
+                OrganizerMenu1(message)
+            elif (message.text == '🔴'):
+                value = 1
+                vnoshu_resy_za_interview(value, idishnik)
+                msg = bot.send_message(message.chat.id, "Данные успешно внесены")
+                OrganizerMenu1(message)
+    except:
+        bot.send_message(message.chat.id, 'Вы ввели некорректные данные по оценке')
+        OrganizerMenu1(message)
+
+
+def spisol_zachisl():
+    sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
+    cursor = sqlite_connection.cursor()
+    cursor.execute(f"""SELECT id, id_v_chate, name, surname, patronymic, first_stage_result, second_stage_result FROM student_info
+                        WHERE interview_result = 3;""")
+    rows = list(cursor.fetchall())
+    sqlite_connection.commit()
+    cursor.close()
+    return rows
+
+
 def Vibrat_qoutu(message):
-    limit = int(message.text.lower())
-    markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
-    yes = types.KeyboardButton('Да')
-    no = types.KeyboardButton('Нет')
-    markup.add(yes, no)
-    global spisok_zach
-    #ДОБАВИТЬ эксепшон
-    spisok_zach = select_quota(limit)
-    for i in range(0, len(spisok_zach)):
-        list = spisok_zach[i]
-        bot.send_message(message.chat.id,
-                         f"ID: {list[0]};\nID в чате: {list[1]};\nИмя: {list[2]};\nФамилия: {list[3]};\nОтчество: {list[4]};\nРезультат за тест: {list[5]}")
-    msg = bot.send_message(message.chat.id, 'Вы хотите отправить групповое приглашение на интервью',reply_markup=markup)
-    bot.register_next_step_handler(msg,vibrat_quotu_if)
-def vibrat_quotu_if(message):
-    if (message.text == 'Да'):
+    try:
+        markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
+        yes = types.KeyboardButton('Да')
+        markup.add(yes)
+        global limit
+        limit = spisol_zachisl()
+        for i in range(0, len(limit)):
+            list = limit[i]
+            bot.send_message(message.chat.id,
+                     f"ID: {list[0]};\nID в чате: {list[1]};\nИмя: {list[2]};\nФамилия: {list[3]};\nОтчество: {list[4]};\nРезультат за  онлайн-тест: {list[5]}\nРезультат за  очный тест: {list[6]}")
+        msg=bot.send_message(message.chat.id, "Хотите вернуться в меню?",reply_markup=markup)
+        bot.register_next_step_handler(msg, hotite)
+    except:
+        bot.send_message(message.chat.id, 'Выбирайте вариант из меню')
+        OrganizerMenu1(message)
+
+def hotite(message):
+    if(message.text == 'Да'):
+        bot.send_message(message.chat.id, "Вы вернулись в меню")
+        OrganizerMenu1(message)
+    else:
+        bot.send_message(message.chat.id, "Вы нажали что-то не то, и вас перебросило в меню")
+
+
+'''def vibrat_quot8_if(message):
+    if(message.text == 'Да'):
         global list3
         list3 = []
-        for i in range(0, len(spisok_zach)):
-            list = spisok_zach[i]
+        for i in range(0, len(limit)):
+            list=limit[i]
             list3.append(list[1])
-        for i in range(0,len(list3)):
+        for i in range(0, len(list3)):
+            spisok1 = select_interview1()
+            markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
+            for j in range(0, len(spisok1)):
+                mark1 = types.KeyboardButton(f"{spisok1[0]} {spisok1[1]}")
+                markup.add(mark1)
             bot.send_message(list3[i],
                              f"Внимание!")
-        SledEtap2(message)
-        print(list3)
-    else:
+            bot.send_message(list3[i],
+                             'Ты успешно прошёл первый и второй этапы тестирования. Выбери удобные тебе дату и время проведения очного этапа из предложенного списка. Если ты не нашёл время, подходящее для тебя, свяжись с организатором\nsupport@wasp-academy.com',
+                             reply_markup=markup)
+        zapis_na_interview()
+    elif(message.text == 'Нет'):
+        bot.send_message(message.chat.id, 'Вы в меню')
         OrganizerMenu1(message)
+    else:
+        bot.send_message(message.chat.id, 'Выбирайте вариант из меню')
+        OrganizerMenu1(message)'''
+
+
+def select_s_id():
+    sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
+    cursor = sqlite_connection.cursor()
+    cursor.execute(f"""SELECT date_interview, time_interview FROM calendar_interview_real WHERE student_info_id IS NOT NULL;""")
+    rows = list(cursor.fetchall())
+    sqlite_connection.commit()
+    cursor.close()
+    return rows
+
+
+def zapis_na_interview():
+    spisok1 = message.text
+    spisok11 = spisok1.split()
+    spisok2 = select_s_id()
+    summa1 = 0
+    for i in range(0, len(spisok2)):
+        spisok22 = spisok2[i]
+        for i in range(0, len(spisok2[i])):
+            if (spisok11[0] == spisok22[0] and spisok11[1] == spisok22[1]):
+                summa1 += 1
+    if(count == 0):
+        update_interview(select_user_id(message.chat.id), spisok11[0], spisok11[1])
+
+
 def SledEtap(message):
+    markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
+    yes = types.KeyboardButton('Да')
+    markup.add(yes)
     global etap
     etap = message.text
-    bot.send_message(etap, 'Поздравляю, ты прошёл оба теста, теперь тебе нужно пройти очное интервью')
-    next_etap(message)
-def SledEtap2():
-    for i in range(0, len(list3)):
-        bot.send_message(list3[i], 'Поздравляю, ты прошёл оба теста, теперь тебе нужно пройти очное интервью, свяжись с организаторами: \nsupport@wasp-academy.com',
-                         reply_markup=hideBoard)
-    #next_etap2(message)
+    msg = bot.send_message(etap, 'Поздравляю, ты прошёл оба теста, теперь тебе нужно пройти очное интервью, ты готов?', reply_markup=markup)
+    bot.register_next_step_handler(msg, next_etap)
+
+
 def next_etap(message):
-    kortezh0 = select_date_interview()
-    markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
-    for i in range(len(kortezh0)):
-        kortezh1 = kortezh0[i]
-        back = types.KeyboardButton(f"{kortezh1[0]} ({kortezh1[1]})")
-        markup.add(back)
+    if(message.text == 'Да'):
+        kortezh0 = select_date_interview()
+        markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
+        for i in range(len(kortezh0)):
+            kortezh1 = kortezh0[i]
+            back = types.KeyboardButton(f"{kortezh1[0]} ({kortezh1[1]})")
+            markup.add(back)
+        msg = bot.send_message(etap,
+                               'Выбери удобные тебе дату и время проведения очного этапа из предложенного списка. Если ты не нашёл время, подходящее для тебя, свяжись с организатором\nsupport@wasp-academy.com',
+                               reply_markup=markup)
+        bot.register_next_step_handler(msg, insert_id_interview)
+    else:
+        SledEtap(message)
 
-
-    msg = bot.send_message(etap,
-                           'Выбери удобные тебе дату и время проведения очного этапа из предложенного списка. Если ты не нашёл время, подходящее для тебя, свяжись с организатором\nsupport@wasp-academy.com',
-                           reply_markup=markup)
-    bot.register_next_step_handler(msg, insert_id_interview)
 '''def next_etap2(message):
     if(message.text == 'Да'):
         kortezh0 = select_date_interview()
@@ -642,7 +781,7 @@ def next_etap(message):
         bot.send_message(message.chat.id, "Напиши организаторам, как будешь готов")
     else:
         bot.send_message(message.chat.id, "Будь умнее")'''
-def insert_id_interview2(message):
+'''def insert_id_interview2(message):
     string = message.text
     stringsplit = string.split()
     string1 = stringsplit[0]
@@ -652,7 +791,9 @@ def insert_id_interview2(message):
     print(string1, c[0])
     for i in range(0, len(list3)):
         id = select_user_id(list3[i])
-        update_interview(id, string1, c[0])
+        update_interview(id, string1, c[0])'''
+
+
 def insert_id_interview(message):
     string = message.text
     stringsplit = string.split()
@@ -663,7 +804,6 @@ def insert_id_interview(message):
     print(string1, c[0])
     id = select_user_id(message.chat.id)
     update_interview(id, string1, c[0])
-
 
 def otpravit_message():
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
@@ -697,7 +837,7 @@ def vhoshu_slot(message):
 
 def vnoshu_slot_if(message):
     if message.text == 'Добавить дату и время':
-        msg = bot.send_message(message.chat.id, "Введите день, который хотите добавить")
+        msg = bot.send_message(message.chat.id, "Введите день, который хотите добавить (Например, 12/05/2024)")
         bot.register_next_step_handler(msg, vnoshu_date_aye)
     elif message.text == 'Удалить последнюю запись':
         udalit_last_note(message)
@@ -706,20 +846,59 @@ def vnoshu_slot_if(message):
         bot.register_next_step_handler(msg, udalit_full_day)
     elif message.text == 'Назад':
         OrganizerMenu1(message)
+    else:
+        bot.send_message(message.chat.id, 'Выбирайте вариант из меню')
+        OrganizerMenu1(message)
 
 
 def vnoshu_date_aye(message):
-    vnoshu_date(message.text)
-    msg = bot.send_message(message.chat.id, "Теперь введите время", reply_markup=hideBoard)
-    bot.register_next_step_handler(msg, vnoshu_time_aye)
+    try:
+        hg= message.text
+        vvedennoe = hg.split('/')
+        day = int(vvedennoe[0])
+        month = int(vvedennoe[1])
+        year = int(vvedennoe[2])
+        print(year, month, day)
+        if(year>=2023 and month>=1 and month<13 and day>0 and day<32 and hg.find('/')!=-1):
+            vnoshu_date(message.text)
+            msg = bot.send_message(message.chat.id, "Теперь введите время (Например, 12:00)", reply_markup=hideBoard)
+            bot.register_next_step_handler(msg, vnoshu_time_aye)
+        else:
+            bot.send_message(message.chat.id, 'Вы ввели дату неправильно')
+            OrganizerMenu1(message)
+    except:
+        bot.send_message(message.chat.id, 'Вы ввели дату неправильно')
+        OrganizerMenu1(message)
+
+
+def vnoshu_resy_za_interview(value, id):
+    sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
+    sqlite_update_query = """UPDATE student_info
+            SET interview_result = \'""" + str(value) + """\'
+            WHERE id_v_chate = \'""" + str(id) + """\'"""
+    cursor = sqlite_connection.cursor()
+    cursor.execute(sqlite_update_query)
+    sqlite_connection.commit()
+    cursor.close()
 
 
 def vnoshu_time_aye(message):
-    day = CountDates2()
-    value_time = message.text
-    vnoshu_time(value_time, day)
-    bot.send_message(message.chat.id, "Время успешно добавлено!")
-    OrganizerMenu1(message)
+    try:
+        vvedennoe = message.text.split(':')
+        hour = int(vvedennoe[0])
+        minute = int(vvedennoe[1])
+        if (hour<24 and hour>=0 and minute<60 and minute>=0 and message.text.find(':')!=-1):
+            day = CountDates2()
+            value_time = message.text
+            vnoshu_time(value_time, day)
+            bot.send_message(message.chat.id, "Время успешно добавлено!")
+            OrganizerMenu1(message)
+        else:
+            bot.send_message(message.chat.id, 'Вы ввели время неправильно')
+            OrganizerMenu1(message)
+    except:
+        bot.send_message(message.chat.id, 'Вы ввели время неправильно')
+        OrganizerMenu1(message)
 
 
 def OchniyEtapRes(message):
@@ -740,32 +919,41 @@ def OchniyEtapResIf(message):
         OrganizerMenu1(message)
 
 
-def SelectStudentInfo(message): #поправить
-    studentid = message.text
-    b = selectstudent(studentid)
-    bot.send_message(message.chat.id,
-                     f"ID: {b[0]}\nID в чате: {b[1]}\nИмя: {b[2]}\nФамилия: {b[3]}\nОтчество: {b[4]}\nEmail: {b[5]}\nНомер телефона: {b[6]}\n"
-                     f"Результат за 1-ый тест: {b[7]}\nРезультат за 2-ой тест: {b[8]}\nШкола: {b[9]}\nГород: {b[10]}\nСтатус: {b[11]}\n")
+def SelectStudentInfo(message):  # поправить
+    try:
+        studentid = message.text
+        b = selectstudent(studentid)
+        bot.send_message(message.chat.id,
+                         f"ID: {b[0]}\nID в чате: {b[1]}\nИмя: {b[2]}\nФамилия: {b[3]}\nОтчество: {b[4]}\nEmail: {b[5]}\nНомер телефона: {b[6]}\n"
+                         f"Результат за 1-ый тест: {b[7]}\nРезультат за 2-ой тест: {b[8]}\nШкола: {b[9]}\nГород: {b[10]}\nСтатус: {b[11]}\n")
+    except:
+        bot.send_message(message.chat.id, 'Введите реальный id кандидата')
+        OrganizerMenu1(message)
 
 
-def Status(message): #поправить
-    global a
-    a = message.text
-    markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
-    cool = types.KeyboardButton('Зачислен')
-    notcool = types.KeyboardButton('Не зачислен')
-    inprocess = types.KeyboardButton('В ожидании')
-    markup.add(cool, notcool, inprocess)
-    b = selectstudent(a)
-    msg = bot.send_message(message.chat.id, f"Выберите статус кандидата, текущий статус: {b[11]}", reply_markup=markup)
-    bot.register_next_step_handler(msg, StatusIf)
+def Status(message):  # поправить
+    try:
+        global otvet
+        otvet = message.text
+        markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
+        cool = types.KeyboardButton('Зачислен')
+        notcool = types.KeyboardButton('Не зачислен')
+        inprocess = types.KeyboardButton('В ожидании')
+        markup.add(cool, notcool, inprocess)
+        b = selectstudent(otvet)
+        msg = bot.send_message(message.chat.id, f"Выберите статус кандидата, текущий статус: {b[11]}",
+                               reply_markup=markup)
+        bot.register_next_step_handler(msg, StatusIf)
+    except:
+        bot.send_message(message.chat.id, 'Введите реальный id кандидата в чате')
+        OrganizerMenu1(message)
 
 
 def StatusIf(message):
     if message.text == 'Зачислен' or message.text == 'Не зачислен' or message.text == 'В ожидании':
-        update_student(message.text, "status", a)
+        update_student(message.text, "status", otvet)
     else:
-        bot.send_message(message.chat.id, "Неправильный статус")
+        bot.send_message(message.chat.id, "Был введён несуществующий статус, вы в меню")
     OrganizerMenu1(message)
 
 
@@ -782,7 +970,7 @@ def sloty_if(message):
 
 def vnesti_sloty_if(message):
     if message.text == 'Добавить дату и время':
-        msg = bot.send_message(message.chat.id, "Введите день, который хотите добавить")
+        msg = bot.send_message(message.chat.id, "Введите день, который хотите добавить (Например, 12/05/2024)", reply_markup=hideBoard)
         bot.register_next_step_handler(msg, vnesti_sloty_date)
     elif message.text == 'Удалить последнюю запись':
         delete_last_note(message)
@@ -791,13 +979,16 @@ def vnesti_sloty_if(message):
         bot.register_next_step_handler(msg, delete_full_day)
     elif message.text == 'Назад':
         OrganizerMenu1(message)
+    else:
+        bot.send_message(message.chat.id, "Введите вариант из меню")
+        OrganizerMenu1(message)
 
 
 def delete_sloty_date(date_id):
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
     cursor = sqlite_connection.cursor()
     sqlite_select_query = f"""UPDATE calendar_interview
-    SET date_interview = "null", time_interview = "null"
+    SET date_interview = 'null', time_interview = 'null'
     WHERE id = {date_id}"""
     cursor.execute(sqlite_select_query)
     sqlite_connection.commit()
@@ -818,9 +1009,9 @@ def udalit_sloty_date(date_id):
 def delete_sloty_date_full(date_id):
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
     cursor = sqlite_connection.cursor()
-    sqlite_select_query = f"""UPDATE calendar_interview
-    SET date_interview = "null", time_interview = "null"
-    WHERE date_interview = {date_id}"""
+    sqlite_select_query = """UPDATE calendar_interview
+        SET date_interview= 'null', time_interview='null'
+        WHERE date_interview = \'""" + str(date_id) + """\'"""
     cursor.execute(sqlite_select_query)
     sqlite_connection.commit()
     cursor.close()
@@ -829,117 +1020,146 @@ def delete_sloty_date_full(date_id):
 def udalit_sloty_date_full(date_id):
     sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
     cursor = sqlite_connection.cursor()
-    sqlite_select_query = f"""UPDATE calendar_interview_real
-    SET date_interview = "null", time_interview = "null"
-    WHERE date_interview = {date_id}"""
+    sqlite_select_query = """UPDATE calendar_interview_real
+        SET date_interview= 'null', time_interview='null'
+        WHERE date_interview = \'""" + str(date_id) + """\'"""
     cursor.execute(sqlite_select_query)
     sqlite_connection.commit()
     cursor.close()
 
 
 def delete_last_note(message):
-    day = CountDates()
-    delete_sloty_date(day)
-    bot.send_message(message.chat.id, "Запись удалена!")
-    OrganizerMenu1(message)
+    try:
+        day = CountDates()
+        delete_sloty_date(day)
+        bot.send_message(message.chat.id, "Запись удалена!")
+        OrganizerMenu1(message)
+    except:
+        bot.send_message(message.chat.id, 'Произошла ошибка, проверьте правильность введённых данных')
+        OrganizerMenu1(message)
 
 
 def udalit_last_note(message):
-    day = CountDates()
-    udalit_sloty_date(day)
-    bot.send_message(message.chat.id, "Запись удалена!")
-    OrganizerMenu1(message)
+    try:
+        day = CountDates()
+        udalit_sloty_date(day)
+        bot.send_message(message.chat.id, "Запись удалена!")
+        OrganizerMenu1(message)
+    except:
+        bot.send_message(message.chat.id, 'Произошла ошибка, проверьте правильность введённых данных')
+        OrganizerMenu1(message)
 
 
 def delete_full_day(message):
-    day = message.text
-    delete_sloty_date_full(day)
+    print(message.text)
+    delete_sloty_date_full(message.text)
     bot.send_message(message.chat.id, "День удалён!")
     OrganizerMenu1(message)
 
-
 def udalit_full_day(message):
-    day = message.text
-    udalit_sloty_date_full(day)
+    udalit_sloty_date_full(message.text)
     bot.send_message(message.chat.id, "День удалён!")
     OrganizerMenu1(message)
 
 
 def vnesti_sloty_date(message):
-    vnesti_date(message.text)
-    msg = bot.send_message(message.chat.id, "Теперь введите время", reply_markup=hideBoard)
-    bot.register_next_step_handler(msg, vnesti_sloty_time)
+    try:
+        hg = message.text
+        vvedennoe = hg.split('/')
+        day = int(vvedennoe[0])
+        month = int(vvedennoe[1])
+        year = int(vvedennoe[2])
+        print(day, month, year)
+        if (year>=2023 and month>=1 and month<13 and day>0 and day<32 and hg.find('/')!=-1):
+            vnesti_date(hg)
+            msg = bot.send_message(message.chat.id, "Теперь введите время (Например, 12:00)", reply_markup=hideBoard)
+            bot.register_next_step_handler(msg, vnesti_sloty_time)
+        else:
+            bot.send_message(message.chat.id, 'Произошла ошибка, проверьте правильность введённых данных')
+            OrganizerMenu1(message)
+    except:
+        bot.send_message(message.chat.id, 'Произошла ошибка, проверьте правильность введённых данных')
+        OrganizerMenu1(message)
 
 
 def vnesti_sloty_time(message):
-    day = CountDates()
-    value_time = message.text
-    vnesti_time(value_time, day)
-    bot.send_message(message.chat.id, "Время успешно добавлено!")
-    OrganizerMenu1(message)
+    try:
+        day = CountDates()
+        value_time = message.text
+        vvedennoe = message.text.split(':')
+        hour = int(vvedennoe[0])
+        minute = int(vvedennoe[1])
+        if (hour<24 and hour>=0 and minute<60 and minute>=0 and message.text.find(':')!=-1):
+            vnesti_time(value_time, day)
+            bot.send_message(message.chat.id, "Время успешно добавлено!")
+            OrganizerMenu1(message)
+        else:
+            bot.send_message(message.chat.id, "Ошибка в вводе времени")
+            OrganizerMenu1(message)
+    except:
+        bot.send_message(message.chat.id, 'Произошла ошибка, проверьте правильность введённых данных')
+        OrganizerMenu1(message)
 
 
 def ImStudent1(message):
-    remove = types.ReplyKeyboardRemove()
-    if (
-            message.text == 'Готов(a) регистрироваться!' or message.text == 'Вы нажали нечто не то' or message.text == 'Вы написали нечто не то' or message.text == 'Назад'):
+    if(message.text):
+        sqlite_connection = sqlite3.connect('kislyakovdatabase.db')
+        cursor = sqlite_connection.cursor()
+        sqlite_insert_query = """INSERT INTO student_info
+                                   (id_v_chate)
+                                   VALUES(\'""" + str(message.chat.id) + """\')"""
+        cursor.execute(sqlite_insert_query)
+        sqlite_connection.commit()
+        cursor.close()
         msg = bot.send_message(message.chat.id,
-                               'Вы были перенесены на этап регистрации. Введите имя (Пример: Антон)',
+                               'Вы были перенесены на этап регистрации. Введите имя (Пример: Евпатий)',
                                reply_markup=hideBoard)
         bot.register_next_step_handler(msg, ImStudent2)
     else:
-        user_answer(message)
+        msg = bot.send_message(message.chat.id,
+                               'Вы ввели что-то не то',
+                               reply_markup=hideBoard)
+        start(message)
 
 
 def ImStudent2(message):
-    remove = types.ReplyKeyboardRemove()
     msg = bot.send_message(message.chat.id,
-                           'Введите фамилию (Пример: Кисляков)', reply_markup=hideBoard)
+                           'Введите фамилию (Пример: Тарасюк)', reply_markup=hideBoard)
     update_student(message.text, "name", message.chat.id)
 
     bot.register_next_step_handler(msg, ImStudent3)
 
 
 def ImStudent3(message):
-    remove = types.ReplyKeyboardRemove()
     msg = bot.send_message(message.chat.id,
-                           'Введите отчество (Пример: Юрьевич)', reply_markup=hideBoard)
+                           'Введите отчество (Пример: Елисеевич)', reply_markup=hideBoard)
     update_student(message.text, "surname", message.chat.id)
 
     bot.register_next_step_handler(msg, step22)
 
 
 def step1(message):
-    if (message.text == 'Назад'):
-        start(message)
-    else:
-        bot.send_message(message.chat.id, 'Вы нажали нечто не то')
-        ImStudent1(message)
+    start(message)
 
 
 def step2(message):
-    remove = types.ReplyKeyboardRemove()
-    if (message.text == 'Назад'):
-        start(message)
-    elif (message.text == 'Готов(a) регистрироваться!'):
-
+    if (message.text == 'Готов(a) регистрироваться!'):
         msg = bot.send_message(message.chat.id,
                                'Вы были перенесены на этап регистрации. Введите фамилию, имя, отчество (Пример: Кисляков Антон Юрьевич)',
                                reply_markup=hideBoard)
         bot.register_next_step_handler(msg, step22)
     else:
-        bot.send_message(message.chat.id, 'Вы нажали нечто не то')
+        bot.send_message(message.chat.id, 'Вы нажали что-то не то')
         start(message)
 
 
 def step22(message):
-    remove = types.ReplyKeyboardRemove()
     update_student(message.text, "patronymic", message.chat.id)
     update_student("В ожидании", "status", message.chat.id)
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
     yes = types.KeyboardButton('Да')
     no = types.KeyboardButton('Нет')
-    back = types.KeyboardButton('Назад')
+    back = types.KeyboardButton('К началу регистрации')
     markup.add(yes, no, back)
     msg = bot.send_message(message.chat.id, f"Вы уверены, что ввели правильные данные?",
                            reply_markup=markup)
@@ -948,7 +1168,6 @@ def step22(message):
 
 
 def step23(message):
-    remove = types.ReplyKeyboardRemove()
     if message.text == 'Да':
         gorod(message)
     elif message.text == 'Нет':
@@ -956,13 +1175,14 @@ def step23(message):
         update_student("null", "patronymic", message.chat.id)
         update_student("null", "name", message.chat.id)
         ImStudent1(message)
+    elif message.text == 'К началу регистрации':
+        ImStudent1(message)
     else:
-        bot.send_message(message.chat.id, "Вы написали нечто не то")
+        bot.send_message(message.chat.id, "Вы написали что-то не то")
         ImStudent1(message)
 
 
 def gorod(message):
-    remove = types.ReplyKeyboardRemove()
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
     back = types.KeyboardButton('Назад')
     markup.add(back)
@@ -973,13 +1193,12 @@ def gorod(message):
 
 
 def proverka_proverki_goroda(message):
-    remove = types.ReplyKeyboardRemove()
     if message.text == 'Нет':
         update_student("null", "city", message.chat.id)
         gorod(message)
     elif message.text == 'Да':
         phone(message)
-    elif message.text == 'Назад':
+    elif message.text == 'К началу регистрации':
         ImStudent1(message)
     else:
         msg = bot.send_message(message.chat.id, "Выбери команду из меню", reply_markup=hideBoard)
@@ -987,7 +1206,6 @@ def proverka_proverki_goroda(message):
 
 
 def proverka_goroda(message):
-    remove = types.ReplyKeyboardRemove()
     check_gorod = message.text
     update_student(check_gorod, "city", message.chat.id)
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
@@ -1000,73 +1218,79 @@ def proverka_goroda(message):
 
 
 def phone(message):
-    remove = types.ReplyKeyboardRemove()
     msg = bot.send_message(message.chat.id, 'Введите номер телефона \n(Например "88005553535")', reply_markup=hideBoard)
     bot.register_next_step_handler(msg, proverka_phone)
 
 
 def proverka_phone(message):
-    remove = types.ReplyKeyboardRemove()
-    markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
-    no = types.KeyboardButton('Нет')
-    yes = types.KeyboardButton('Да')
-    back = types.KeyboardButton('Назад')
-    markup.add(yes, no, back)
-    msg = bot.send_message(message.chat.id, f"Ваш номер телефона: {message.text}, вы уверены?", reply_markup=markup)
-    bot.register_next_step_handler(msg, proverka_proverki_phone)
-    update_student(message.text, "phone_number", message.chat.id)
+    try:
+        if (int(message.text) > 80000000000):
+            markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
+            no = types.KeyboardButton('Нет')
+            yes = types.KeyboardButton('Да')
+            back = types.KeyboardButton('К началу регистрации')
+            markup.add(yes, no, back)
+            msg = bot.send_message(message.chat.id, f"Ваш номер телефона: {message.text}, вы уверены?",
+                                   reply_markup=markup)
+            bot.register_next_step_handler(msg, proverka_proverki_phone)
+            update_student(message.text, "phone_number", message.chat.id)
+        else:
+            bot.send_message(message.chat.id, "Введите номер согласно образцу")
+            phone(message)
+    except:
+        bot.send_message(message.chat.id, "Произошла ошибка")
+        phone(message)
 
 
 def proverka_proverki_phone(message):
-    remove = types.ReplyKeyboardRemove()
     if message.text == 'Нет':
         update_student("null", "phone_number", message.chat.id)
         phone(message)
     elif message.text == 'Да':
         vvedite_pochtu(message)
-    elif message.text == 'Назад':
-        gorod(message)
+    elif message.text == 'К началу регистрации':
+        ImStudent1(message)
     else:
         msg = bot.send_message(message.chat.id, "Выбери команду из меню")
         phone(msg)
 
 
 def vvedite_pochtu(message):
-    remove = types.ReplyKeyboardRemove()
     msg = bot.send_message(message.chat.id, 'Введите почту \n(Например "kislyakovanton@lit1533.com")',
                            reply_markup=hideBoard)
     bot.register_next_step_handler(msg, proverka_pochtu)
 
 
 def proverka_pochtu(message):
-    remove = types.ReplyKeyboardRemove()
     check_email = message.text
-    update_student(check_email, "email", message.chat.id)
-    markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
-    no = types.KeyboardButton('Нет')
-    yes = types.KeyboardButton('Да')
-    back = types.KeyboardButton('Назад')
-    markup.add(yes, no, back)
-    msg = bot.send_message(message.chat.id, f"Ваша почта: {message.text}, вы уверены?", reply_markup=markup)
-    bot.register_next_step_handler(msg, proverka_proverki_pochtu)
+    if (check_email.find('@') != -1 and check_email.find('.') != -1):
+        update_student(check_email, "email", message.chat.id)
+        markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
+        no = types.KeyboardButton('Нет')
+        yes = types.KeyboardButton('Да')
+        back = types.KeyboardButton('К началу регистрации')
+        markup.add(yes, no, back)
+        msg = bot.send_message(message.chat.id, f"Ваша почта: {message.text}, вы уверены?", reply_markup=markup)
+        bot.register_next_step_handler(msg, proverka_proverki_pochtu)
+    else:
+        bot.send_message(message.chat.id, "Введите почту согласно образцу")
+        vvedite_pochtu(message)
 
 
 def proverka_proverki_pochtu(message):
-    remove = types.ReplyKeyboardRemove()
     if message.text == 'Нет':
         update_student("null", "email", message.chat.id)
         vvedite_pochtu(message)
     elif message.text == 'Да':
         vvedite_school(message)
-    elif message.text == 'Назад':
-        phone(message)
+    elif message.text == 'К началу регистрации':
+        ImStudent1(message)
     else:
         msg = bot.send_message(message.chat.id, "Выбери команду из меню")
         vvedite_pochtu(msg)
 
 
 def vvedite_school(message):
-    remove = types.ReplyKeyboardRemove()
     msg = bot.send_message(message.chat.id,
                            'Введите название вашего учебного заведения \n(Например "ГБОУ Школа №1488" или НИУ ВШЭ)',
                            reply_markup=hideBoard)
@@ -1074,38 +1298,35 @@ def vvedite_school(message):
 
 
 def proverka_school(message):
-    remove = types.ReplyKeyboardRemove()
     check_school = message.text
     update_student(check_school, "school", message.chat.id)
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
     no = types.KeyboardButton('Нет')
     yes = types.KeyboardButton('Да')
-    back = types.KeyboardButton('Назад')
+    back = types.KeyboardButton('К началу регистрации')
     markup.add(yes, no, back)
     msg = bot.send_message(message.chat.id, f"Ваше учебное заведение: {message.text}, вы уверены?", reply_markup=markup)
     bot.register_next_step_handler(msg, proverka_proverki_school)
 
 
 def proverka_proverki_school(message):
-    remove = types.ReplyKeyboardRemove()
     if message.text == 'Нет':
         update_student("null", "school", message.chat.id)
         vvedite_school(message)
     elif message.text == 'Да':
         Vvedenie_K_Testu(message)
-    elif message.text == 'Назад':
-        vvedite_pochtu(message)
+    elif message.text == 'К началу регистрации':
+        ImStudent1(message)
     else:
         msg = bot.send_message(message.chat.id, "Выбери команду из меню")
         vvedite_school(msg)
 
 
 def Vvedenie_K_Testu(message):
-    remove = types.ReplyKeyboardRemove()
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
     no = types.KeyboardButton('Нет')
     yes = types.KeyboardButton('Да')
-    back = types.KeyboardButton('Назад')
+    back = types.KeyboardButton('К началу регистрации')
     markup.add(yes, no, back)
     msg = bot.send_message(message.chat.id, 'Теперь тебе нужно пройти несложный тест\nТы готов?',
                            reply_markup=markup)
@@ -1113,21 +1334,22 @@ def Vvedenie_K_Testu(message):
 
 
 def proverka_gotovnosti_k_testu(message):
-    remove = types.ReplyKeyboardRemove()
     if message.text == 'Нет':
-        bot.send_message(message.chat.id, 'Возвращайся, когда будешь готов!')
+        bot.send_message(message.chat.id, 'Когда будешь готов, нажми "Да"')
+        Vvedenie_K_Testu(message)
     elif message.text == 'Да':
         bot.send_message(message.chat.id, 'Поехали!')
+        global name1
+        name1 = message.chat.id
         menu_testa(message)
-    elif message.text == 'Назад':
-        vvedite_school(message)
+    elif message.text == 'К началу регистрации':
+        ImStudent1(message)
     else:
         msg = bot.send_message(message.chat.id, "Выбери команду из меню")
         Vvedenie_K_Testu(msg)
 
 
 def menu_testa(message):
-    remove = types.ReplyKeyboardRemove()
     zadanie1 = select_random_test_task(1)
     zadanie2 = select_random_test_task(2)
     zadanie3 = select_random_test_task(3)
@@ -1157,45 +1379,45 @@ def menu_testa(message):
 
 
 def raspredelenie(message):
-    remove = types.ReplyKeyboardRemove()
     if (message.text == 'Задание 1' or message.text == 'Приступить к выполнению задания'):
         markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
         back = types.KeyboardButton('Назад')
         markup.add(back)
-        zadanie = select_sozdanniy_varik1(select_user_id(message.chat.id))
-        instruction = select_instruction_task(zadanie)
+        zadanie = select_sozdanniy_varik1(select_user_id(message.chat.id))[0]
+        print(zadanie[0])
+        instruction = select_instruction_task(zadanie[0])
         msg = bot.send_message(message.chat.id, instruction, reply_markup=markup)
         bot.register_next_step_handler(msg, zadanie1_acceptage)
     elif (message.text == 'Задание 2'):
         markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
         back = types.KeyboardButton('Назад')
         markup.add(back)
-        zadanie = select_sozdanniy_varik2(select_user_id(message.chat.id))
-        instruction = select_instruction_task(zadanie)
+        zadanie = select_sozdanniy_varik2(select_user_id(message.chat.id))[0]
+        instruction = select_instruction_task(zadanie[0])
         msg = bot.send_message(message.chat.id, instruction, reply_markup=markup)
         bot.register_next_step_handler(msg, zadanie2_acceptage)
     elif (message.text == 'Задание 3'):
         markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
         back = types.KeyboardButton('Назад')
         markup.add(back)
-        zadanie = select_sozdanniy_varik3(select_user_id(message.chat.id))
-        instruction = select_instruction_task(zadanie)
+        zadanie = select_sozdanniy_varik3(select_user_id(message.chat.id))[0]
+        instruction = select_instruction_task(zadanie[0])
         msg = bot.send_message(message.chat.id, instruction, reply_markup=markup)
         bot.register_next_step_handler(msg, zadanie3_acceptage)
     elif (message.text == 'Задание 4'):
         markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
         back = types.KeyboardButton('Назад')
         markup.add(back)
-        zadanie = select_sozdanniy_varik4(select_user_id(message.chat.id))
-        instruction = select_instruction_task(zadanie)
+        zadanie = select_sozdanniy_varik4(select_user_id(message.chat.id))[0]
+        instruction = select_instruction_task(zadanie[0])
         msg = bot.send_message(message.chat.id, instruction, reply_markup=markup)
         bot.register_next_step_handler(msg, zadanie4_acceptage)
     elif (message.text == 'Задание 5'):
         markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
         back = types.KeyboardButton('Назад')
         markup.add(back)
-        zadanie = select_sozdanniy_varik5(select_user_id(message.chat.id))
-        instruction = select_instruction_task(zadanie)
+        zadanie = select_sozdanniy_varik5(select_user_id(name1))[0]
+        instruction = select_instruction_task(zadanie[0])
         num1 = "5.	Перед вами программа, записанная на пяти языках программирования." \
                " Было проведено 10 запусков программы, при которых в качестве значений переменных s и t вводились следующие пары чисел:" \
                " \n(1, 2); (5, 4); (-10, 6); (9, 2); (1, -6); (11, 12); (-11, 12); (-10; 10); (12; -1); (-12; 1)." \
@@ -1277,6 +1499,9 @@ def raspredelenie(message):
         else:
             bot.send_message(message.chat.id,
                              f"Ты набрал {itog} балла из 10, к сожалению, ты набрал слишком мало баллов и не сможешь зарегистрироваться на очный этап")
+    else:
+        bot.send_message(message.chat.id, "Вы ввели что-то не то")
+        proverka_gotovnosti_k_testu(message)
 
 
 def zapis_na_ochnyi_etap(message):
@@ -1287,9 +1512,8 @@ def zapis_na_ochnyi_etap(message):
         kortezh1 = kortezh[c]
         back = types.KeyboardButton(f"{kortezh1[0]} ({kortezh1[1]})")
         markup.add(back)
-        c += 1
     msg = bot.send_message(message.chat.id,
-                           'Выбери удобные тебе дату и время проведения очного этапа из предложенного списка. Если ты не нашёл время, подходящее для тебя, свяжись с организатором',
+                           'Выбери удобные тебе дату и время проведения очного этапа из предложенного списка. Если ты не нашёл время, подходящее для тебя (или оно не предложено), свяжись с организатором\nsupport@wasp-academy.com',
                            reply_markup=markup)
     bot.register_next_step_handler(msg, insertstudentid)
 
@@ -1301,13 +1525,10 @@ def insertstudentid(message):
     string2 = stringsplit[1]
     b = string2.split('(')
     c = b[1].split(')')
-    print(string1, c[0])
     id = select_user_id(message.chat.id)
     update_dateochniyetap(id, string1, c[0])
 
-
 def zadanie1_acceptage(message):
-    remove = types.ReplyKeyboardRemove()
     if (message.text == 'Назад'):
         menu_testa_after_zapolnenie(message)
     else:
@@ -1324,7 +1545,6 @@ def zadanie1_acceptage(message):
 
 
 def zadanie2_acceptage(message):
-    remove = types.ReplyKeyboardRemove()
     if (message.text == 'Назад'):
         menu_testa_after_zapolnenie(message)
     else:
@@ -1341,7 +1561,6 @@ def zadanie2_acceptage(message):
 
 
 def zadanie3_acceptage(message):
-    remove = types.ReplyKeyboardRemove()
     if (message.text == 'Назад'):
         menu_testa_after_zapolnenie(message)
     else:
@@ -1358,7 +1577,6 @@ def zadanie3_acceptage(message):
 
 
 def zadanie4_acceptage(message):
-    remove = types.ReplyKeyboardRemove()
     if (message.text == 'Назад'):
         menu_testa_after_zapolnenie(message)
     else:
@@ -1375,7 +1593,6 @@ def zadanie4_acceptage(message):
 
 
 def zadanie5_acceptage(message):
-    remove = types.ReplyKeyboardRemove()
     if (message.text == 'Назад'):
         menu_testa_after_zapolnenie(message)
     else:
@@ -1392,7 +1609,6 @@ def zadanie5_acceptage(message):
 
 
 def menu_testa_after_zapolnenie(message):
-    remove = types.ReplyKeyboardRemove()
     markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True, row_width=1)
     zadanie_1 = types.KeyboardButton('Задание 1')
     zadanie_2 = types.KeyboardButton('Задание 2')
