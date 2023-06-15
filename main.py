@@ -468,7 +468,7 @@ def user_answer(message):
 
 def ImOrganiser(message):
     if message.text == '123':
-        bot.send_message(message.chat.id, 'Добро пожаловать, Anthony')
+        bot.send_message(message.chat.id, 'Добро пожаловать!')
         OrganizerMenu1(message)
     else:
         bot.send_message(message.chat.id, 'Неверный пароль')
@@ -723,18 +723,7 @@ def select_s_id():
     return rows
 
 
-def zapis_na_interview():
-    spisok1 = message.text
-    spisok11 = spisok1.split()
-    spisok2 = select_s_id()
-    summa1 = 0
-    for i in range(0, len(spisok2)):
-        spisok22 = spisok2[i]
-        for i in range(0, len(spisok2[i])):
-            if (spisok11[0] == spisok22[0] and spisok11[1] == spisok22[1]):
-                summa1 += 1
-    if(count == 0):
-        update_interview(select_user_id(message.chat.id), spisok11[0], spisok11[1])
+
 
 
 def SledEtap(message):
